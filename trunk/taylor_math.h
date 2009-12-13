@@ -10,15 +10,19 @@
 template<class T,int N>
 void inv_taylor(taylor<T,1,N>& t, const T &a)
 {
-  assert(a != T(0) && "1/(a+x) not analytic at a = 0");
+  assert(a != 0 && "1/(a+x) not analytic at a = 0");
   t[0] = 1/a;
   for (int i=1;i<=N;i++)
-    t[i] = -t[i-1]/a;
+    t[i] = -t[i-1]*t[0];
 }
 
 template<class T,int Nvar, int Ndeg, class S>
 taylor<T,Nvar, Ndeg> operator/(const S &x, const taylor<T,Nvar,Ndeg>& t)
 {
+#ifdef TAYLOR_LOGGING
+  if (taylor_logging)
+    cout << "operator/ S templated. x = " << x << endl;
+#endif
   taylor<T,1,Ndeg> tmp;
   inv_taylor(tmp,t[0]);
   tmp*=x;
@@ -30,6 +34,10 @@ taylor<T,Nvar, Ndeg> operator/(const S &x, const taylor<T,Nvar,Ndeg>& t)
 template<class T,int Nvar, int Ndeg>
 taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>& t, const T &x)
 {
+#ifdef TAYLOR_LOGGING
+  if (taylor_logging)
+    cout << "operator/ by scalar. x = " << x << endl;
+#endif
   taylor<T,Nvar,Ndeg> tmp = t;
   tmp *= 1/x;
   return tmp;
@@ -38,6 +46,10 @@ taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>& t, const T &x)
 template<class T,int Nvar, int Ndeg, class S>
 taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>& t, const S &x)
 {
+#ifdef TAYLOR_LOGGING
+  if (taylor_logging)
+    cout << "operator/ by scalar templated. x = " << x << endl;
+#endif
   taylor<T,Nvar,Ndeg> tmp = t;
   tmp *= 1/T(x);
   return tmp;
@@ -80,15 +92,31 @@ taylor<T,Nvar,Ndeg> exp(const taylor<T,Nvar,Ndeg> &t)
 
 // Log series log(a+x) = log(1+x/a) + log(a)
 template<class T,int N>
-void log_taylor(taylor<T,1,N> &t, const T &x0)
+void log_taylor_old(taylor<T,1,N> &t, const T &x0)
 {
-  assert(x0 != T(0) && "log(x) not analytic at x = 0");
+  //  assert(x0 != T(0) && "log(x) not analytic at x = 0");
   t[0] = log(x0);
   T xn = x0;
   for (int i=1;i<=N;i++)
     {
       t[i] = (2*(i & 1)-1)/(i*xn);
       xn *= x0;
+    }
+}
+
+
+// Log series log(a+x) = log(1+x/a) + log(a)
+template<class T,int N>
+void log_taylor(taylor<T,1,N> &t, const T &x0)
+{
+  assert(x0 > 0 && "log(x) not real analytic at x <= 0");
+  t[0] = log(x0);
+  T x0inv = 1/x0;
+  T xn = x0inv;
+  for (int i=1;i<=N;i++)
+    {
+      t[i] = (xn/double(i))*(2*(i & 1)-1);
+      xn *= x0inv;
     }
 }
 
@@ -107,12 +135,27 @@ taylor<T,Nvar,Ndeg> log(const taylor<T,Nvar,Ndeg> &t)
 template<class S,class T,int N>
 void pow_taylor(taylor<T,1,N>& t, const T &x0, const S &a)
 {
-  assert(x0 != T(0) && "pow(x,a) not analytic at x = 0");
+  assert(x0 > 0 && "pow(x,a) not real analytic at x <= 0");
   t[0] = pow(x0,a);
+  T x0inv = 1/x0;
   for (int i=1;i<=N;i++)
-    t[i] = t[i-1]*(a-i+1)/(x0*i);
+    t[i] = t[i-1]*x0inv*(a-i+1)/i;
 }
 
+// We need this version with double a argument to prevent truncation
+// to int.
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, const double &a)
+{
+  taylor<T,1,Ndeg> tmp;
+  pow_taylor(tmp,t[0],a);
+
+  taylor<T,Nvar,Ndeg> res;
+  t.compose(res,tmp);
+  return res;
+}
+
+#if 0
 template<class T,int Nvar, int Ndeg, class S>
 taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, const S &a)
 {
@@ -123,6 +166,20 @@ taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, const S &a)
   t.compose(res,tmp);
   return res;
 }
+#endif
+
+#if 0
+// This might be slightly dangerous to enable this, since
+// we can construct and a from an int.
+// when the exponent is also a taylor expansion use
+// t^a = exp(a*log(t))
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, 
+			const taylor<T,Nvar,Ndeg> &a)
+{
+  return exp(a*log(t));
+}
+#endif
 
 template<class T,int Nvar, int Ndeg>
 taylor<T,Nvar,Ndeg> sqrt(const taylor<T,Nvar,Ndeg> &t)
@@ -143,7 +200,7 @@ template<class T,int Nvar, int Ndeg>
 taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, int n)
 {
   if (n < 1)
-    return pow(t,T(n));
+    return pow(t,double(n));
   taylor<T,Nvar,Ndeg> res = t;
   while (n-- > 1)
       res *= t;
@@ -159,7 +216,7 @@ void atan_taylor(taylor<T,1,Ndeg>& t, const T &a)
   taylor<T,1,Ndeg> invt,x;
   inv_taylor(invt,1+a*a);
   //insert x = 2*a*x + x^2
-  x = taylor<T,1,Ndeg>(0);
+  x = 0;
   if (Ndeg > 0)
     x[1] = 2*a;
   if (Ndeg > 1)
