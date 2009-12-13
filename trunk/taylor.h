@@ -145,15 +145,23 @@ public:
       for (int i=0;i<size;i++)
 	c[i] *= scale;
     }
+  /* why?
   void operator*=(int scale)
     {
       for (int i=0;i<size;i++)
 	c[i] *= scale;
     }
+  */
   template<int Ndeg2>
   void operator*=(const taylor<T, Nvar,Ndeg2>& t)
+  {
+    taylormul(*this,t);
+  }
+  template<class S>
+  void operator/=(const S& scale)
     {
-      taylormul(*this,t);
+      for (int i=0;i<size;i++)
+	c[i] /= scale;
     }
   /* Put sum_i coeff[i]*(this - this[0])^i in res,
      used when evaluating analytical functions of this */
