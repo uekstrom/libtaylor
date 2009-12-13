@@ -66,22 +66,34 @@ taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>&t1, const taylor<T,Nvar
   return res;
 }
 
+template<class T,int Nvar, int Ndeg>
+void operator/=(taylor<T,Nvar,Ndeg>&t1, const taylor<T,Nvar,Ndeg>& t2)
+{
+  t1 = t1/t2;
+}
+
 // Evaluate the taylor series of exp(x0+x)=exp(x0)*exp(x)
 template<class T,int Ndeg>
 void exp_taylor(taylor<T,1,Ndeg> &t, const T &x0)
 {
+#ifdef TAYLOR_LOGGING
+  cerr << "exp_taylor<T, " << Ndeg << ">("<<x0<<")" << endl;
+#endif
   T ifac = 1;
   t[0] = exp(x0);
   for (int i=1;i<=Ndeg;i++)
     {
-      ifac *= i;
-      t[i] = t[0]/ifac;
+      ifac /= i;
+      t[i] = t[0]*ifac;
     }
 }
 
 template<class T,int Nvar, int Ndeg>
 taylor<T,Nvar,Ndeg> exp(const taylor<T,Nvar,Ndeg> &t)
 {
+#ifdef TAYLOR_LOGGING
+  cerr << "exp<T, " << Nvar << ", " << Ndeg << ">()" << endl;
+#endif
   taylor<T,1,Ndeg> tmp;
   exp_taylor(tmp,t[0]);
 
@@ -212,6 +224,9 @@ taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, int n)
 template<class T,int Ndeg>
 void atan_taylor(taylor<T,1,Ndeg>& t, const T &a)
 {
+#ifdef TAYLOR_LOGGING
+  cerr << "atan_taylor<T, " << Ndeg << ">("<<a<<")" << endl;
+#endif
   // Calculate taylor expansion of 1/(1+a^2+x)
   taylor<T,1,Ndeg> invt,x;
   inv_taylor(invt,1+a*a);
@@ -230,6 +245,9 @@ void atan_taylor(taylor<T,1,Ndeg>& t, const T &a)
 template<class T,int Nvar, int Ndeg>
 taylor<T,Nvar,Ndeg> atan(const taylor<T,Nvar,Ndeg> &t)
 {
+#ifdef TAYLOR_LOGGING
+  cerr << "atan<T, " << Nvar << ", " << Ndeg << ">("<<t<<")" << endl;
+#endif
   taylor<T,1,Ndeg> tmp;
   atan_taylor(tmp,t[0]);
 
@@ -282,28 +300,34 @@ taylor<T,Nvar,Ndeg> erf(const taylor<T,Nvar,Ndeg> &t)
 template<class T,int Ndeg>
 void sin_taylor(taylor<T,1,Ndeg>& t, const T &a)
 {
-    if (Ndeg > 0)
+#ifdef TAYLOR_LOGGING
+  cerr << "sin_taylor<T, " << Ndeg << ">("<<a<<")" << endl;
+#endif
+  if (Ndeg > 0)
     {
-	T s = sin(a), c = cos(a), fac = 1;
-	for (int i=0;2*i<Ndeg;i++)
+      T s = sin(a), c = cos(a), fac = 1;
+      for (int i=0;2*i<Ndeg;i++)
 	{
-	    t[2*i] = fac*s;
-	    fac /= (2*i+1);
-	    t[2*i+1] = fac*c;
-	    fac /= -(2*i+2);
+	  t[2*i] = fac*s;
+	  fac /= (2*i+1);
+	  t[2*i+1] = fac*c;
+	  fac /= -(2*i+2);
 	}
-	if (Ndeg % 2 == 0)
-	    t[Ndeg] = s*fac;
+      if (Ndeg % 2 == 0)
+	t[Ndeg] = s*fac;
     }
-    else
+  else
     {
-	t[0] = sin(a);
-    }   
+      t[0] = sin(a);
+    }
 }
 
 template<class T,int Nvar, int Ndeg>
 taylor<T,Nvar,Ndeg> sin(const taylor<T,Nvar,Ndeg> &t)
 {
+#ifdef TAYLOR_LOGGING
+  cerr << "sin<T, " << Nvar << ", " << Ndeg << ">("<<t<<")" << endl;
+#endif
   taylor<T,1,Ndeg> tmp;
   sin_taylor(tmp,t[0]);
 
