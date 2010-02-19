@@ -17,8 +17,12 @@ public:
   using polynomial<T, Nvar, Ndeg>::c;
 
   taylor(void) {}
+  // This does not work when T is a int. One ugly solution is to
+  // specialize taylor for int T's, but perhaps not so useful?
   template<typename S>
   taylor(const S &c0) : polynomial<T, Nvar,Ndeg>(T(c0)) {} 
+  //  taylor(double c0) : polynomial<T, Nvar,Ndeg>(T(c0)) {} 
+  //  taylor(const T &c0) : polynomial<T, Nvar,Ndeg>(c0) {} 
   // Set the constant term to c0 and the first order term of
   // variable var to var_value.
   template<typename S>
@@ -145,23 +149,26 @@ public:
       for (int i=0;i<size;i++)
 	c[i] *= scale;
     }
-  /* why?
-  void operator*=(int scale)
-    {
-      for (int i=0;i<size;i++)
-	c[i] *= scale;
-    }
-  */
-  template<int Ndeg2>
-  void operator*=(const taylor<T, Nvar,Ndeg2>& t)
-  {
-    taylormul(*this,t);
-  }
   template<class S>
   void operator/=(const S& scale)
     {
       for (int i=0;i<size;i++)
 	c[i] /= scale;
+    }
+  void operator/=(const taylor<T,Nvar,Ndeg>& t)
+    {
+      taylor<T,Nvar,Ndeg> tinv = 1/t;
+      *this*=tinv;
+    }
+  void operator*=(int scale)
+    {
+      for (int i=0;i<size;i++)
+	c[i] *= scale;
+    }
+  template<int Ndeg2>
+  void operator*=(const taylor<T, Nvar,Ndeg2>& t)
+    {
+      taylormul(*this,t);
     }
   /* Put sum_i coeff[i]*(this - this[0])^i in res,
      used when evaluating analytical functions of this */
@@ -171,13 +178,7 @@ public:
       assert(Nres >= Ndeg);
       taylor<T, Nvar,Ndeg> tmp = *this;
       tmp[0] = 0;
-      res = 0;
-      for (int i=Nres;i>0;i--)
-	{
-	  res[0] += coeff[i];
-	  res *= tmp;
-	}
-      res[0] += coeff[0];
+      taylorcompose0(res,tmp,coeff.c);
     }
   T dot(const taylor<T, Nvar, Ndeg> &t) const
   {

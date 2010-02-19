@@ -16,6 +16,34 @@ void inv_taylor(taylor<T,1,N>& t, const T &a)
     t[i] = -t[i-1]*t[0];
 }
 
+// Reciprocal taylor series by the Newton method.
+// a/t = 1 + O(x^Ndeg+1)
+// t0 = 1/a[0]
+// t1 = 1/a[0]*(2-a/a[0])
+// tn+1 = -tn*(a*tn-2)
+template<class T,int Nvar, int Ndeg>
+void taylor_reciprocal(taylor<T,Nvar,Ndeg>& t, const taylor<T,Nvar,Ndeg> &a)
+{
+  assert(a != 0 && "1/(a+x) not analytic at a = 0");
+  t[0] = 1/a[0];
+  if (Ndeg == 0)
+    return;
+  T c = -t[0]*t[0];
+  for (int i=1;i<t.size;i++)
+    t[i] = c*a[i];
+
+  // need only log2(Ndeg) number of terms
+  for (int i=1;i<=(int)log2(Ndeg+1);i++)
+    {
+      taylor<T,Nvar,Ndeg> tmp = a;
+      tmp *= t;
+      tmp[0] -= 2;
+      tmp *= t;
+      for (int j=0;j<t.size;j++)
+	t[j] = -tmp[j];
+    }
+}
+
 template<class T,int Nvar, int Ndeg, class S>
 taylor<T,Nvar, Ndeg> operator/(const S &x, const taylor<T,Nvar,Ndeg>& t)
 {
@@ -66,34 +94,22 @@ taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>&t1, const taylor<T,Nvar
   return res;
 }
 
-template<class T,int Nvar, int Ndeg>
-void operator/=(taylor<T,Nvar,Ndeg>&t1, const taylor<T,Nvar,Ndeg>& t2)
-{
-  t1 = t1/t2;
-}
-
 // Evaluate the taylor series of exp(x0+x)=exp(x0)*exp(x)
 template<class T,int Ndeg>
 void exp_taylor(taylor<T,1,Ndeg> &t, const T &x0)
 {
-#ifdef TAYLOR_LOGGING
-  cerr << "exp_taylor<T, " << Ndeg << ">("<<x0<<")" << endl;
-#endif
   T ifac = 1;
   t[0] = exp(x0);
   for (int i=1;i<=Ndeg;i++)
     {
-      ifac /= i;
-      t[i] = t[0]*ifac;
+      ifac *= i;
+      t[i] = t[0]/ifac;
     }
 }
 
 template<class T,int Nvar, int Ndeg>
 taylor<T,Nvar,Ndeg> exp(const taylor<T,Nvar,Ndeg> &t)
 {
-#ifdef TAYLOR_LOGGING
-  cerr << "exp<T, " << Nvar << ", " << Ndeg << ">()" << endl;
-#endif
   taylor<T,1,Ndeg> tmp;
   exp_taylor(tmp,t[0]);
 
@@ -224,9 +240,6 @@ taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, int n)
 template<class T,int Ndeg>
 void atan_taylor(taylor<T,1,Ndeg>& t, const T &a)
 {
-#ifdef TAYLOR_LOGGING
-  cerr << "atan_taylor<T, " << Ndeg << ">("<<a<<")" << endl;
-#endif
   // Calculate taylor expansion of 1/(1+a^2+x)
   taylor<T,1,Ndeg> invt,x;
   inv_taylor(invt,1+a*a);
@@ -245,9 +258,6 @@ void atan_taylor(taylor<T,1,Ndeg>& t, const T &a)
 template<class T,int Nvar, int Ndeg>
 taylor<T,Nvar,Ndeg> atan(const taylor<T,Nvar,Ndeg> &t)
 {
-#ifdef TAYLOR_LOGGING
-  cerr << "atan<T, " << Nvar << ", " << Ndeg << ">("<<t<<")" << endl;
-#endif
   taylor<T,1,Ndeg> tmp;
   atan_taylor(tmp,t[0]);
 
@@ -272,6 +282,30 @@ void gauss_taylor(taylor<T,1,Ndeg>& t, const T &a)
     g[2*i] = -g[2*(i-1)]/i;
   t*=g;
 }
+#ifdef WITH_QD
+// QD does not provide an error function, so here is a slow and
+// not so smart Taylor expansion.
+static inline qd_real erf(const qd_real &x)
+{
+  qd_real sum = 0;
+  qd_real x2 = x*x, term = x;
+  int k = 0;
+  if (fabs(x) > 12) // erf(12) = 1 - 1e-64
+    return 1;
+  sum += term;
+  if (fabs(x) > 1e-64)
+    {
+      double magn = erf(to_double(x)); // order of magnitude of answer.
+      while (fabs(term/magn) > 1e-64)
+	{
+	  k++;
+	  term *= qd_real(-(2*k-1)*x2)/(k*(2*k+1));
+	  sum += term;
+	}
+    }
+  return sum*2/sqrt(qd_real::_pi);
+}
+#endif
 
 // Use that d/dx erf(x) = 2/sqrt(pi)*exp(-x^2),
 // Taylor expand in x^2 and integrate.
@@ -300,34 +334,28 @@ taylor<T,Nvar,Ndeg> erf(const taylor<T,Nvar,Ndeg> &t)
 template<class T,int Ndeg>
 void sin_taylor(taylor<T,1,Ndeg>& t, const T &a)
 {
-#ifdef TAYLOR_LOGGING
-  cerr << "sin_taylor<T, " << Ndeg << ">("<<a<<")" << endl;
-#endif
-  if (Ndeg > 0)
+    if (Ndeg > 0)
     {
-      T s = sin(a), c = cos(a), fac = 1;
-      for (int i=0;2*i<Ndeg;i++)
+	T s = sin(a), c = cos(a), fac = 1;
+	for (int i=0;2*i<Ndeg;i++)
 	{
-	  t[2*i] = fac*s;
-	  fac /= (2*i+1);
-	  t[2*i+1] = fac*c;
-	  fac /= -(2*i+2);
+	    t[2*i] = fac*s;
+	    fac /= (2*i+1);
+	    t[2*i+1] = fac*c;
+	    fac /= -(2*i+2);
 	}
-      if (Ndeg % 2 == 0)
-	t[Ndeg] = s*fac;
+	if (Ndeg % 2 == 0)
+	    t[Ndeg] = s*fac;
     }
-  else
+    else
     {
-      t[0] = sin(a);
-    }
+	t[0] = sin(a);
+    }   
 }
 
 template<class T,int Nvar, int Ndeg>
 taylor<T,Nvar,Ndeg> sin(const taylor<T,Nvar,Ndeg> &t)
 {
-#ifdef TAYLOR_LOGGING
-  cerr << "sin<T, " << Nvar << ", " << Ndeg << ">("<<t<<")" << endl;
-#endif
   taylor<T,1,Ndeg> tmp;
   sin_taylor(tmp,t[0]);
 
