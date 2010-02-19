@@ -162,9 +162,10 @@ struct term_sub
 template <int Nvar, int t1, int t2>
 struct term_prod
 {
-  enum { prod = polylen<Nvar,term_deg<Nvar,t1>::deg+term_deg<Nvar,t2>::deg-1>::len +
+  enum { prod = polylen<Nvar,term_deg<Nvar,t1>::deg
+	 + term_deg<Nvar,t2>::deg-1>::len +
 	 term_prod<Nvar-1,t1-polylen<Nvar,term_deg<Nvar,t1>::deg-1>::len,
-	                  t2-polylen<Nvar,term_deg<Nvar,t2>::deg-1>::len>::prod
+	 t2 - polylen<Nvar,term_deg<Nvar,t2>::deg-1>::len>::prod
   };
 };
 
@@ -247,22 +248,23 @@ struct deriv_fac<1,0>
   enum { fac = 1 };
 };
 
-
-template<class numtype, int Nvar, int term>
+template<class numtype, int Nvar, int first_term, int last_term>
 struct deriv_fac_multiplier
 {
   static void mul_fac(numtype c[])
   {
-    deriv_fac_multiplier<numtype,Nvar,term-1>::mul_fac(c);
-    c[term] *= deriv_fac<Nvar,term>::fac;
+    deriv_fac_multiplier<numtype,Nvar,first_term,(first_term+last_term)/2>::mul_fac(c);
+    deriv_fac_multiplier<numtype,Nvar,(first_term+last_term)/2+1,last_term>::mul_fac(c);
   }
 };
 
-template<class numtype, int Nvar>
-struct deriv_fac_multiplier<numtype,Nvar,0>
+template<class numtype, int Nvar, int term>
+  struct deriv_fac_multiplier<numtype,Nvar,term,term>
 {
-  static void mul_fac(numtype c[]) {}
+  static void mul_fac(numtype c[]) {c[term] *= deriv_fac<Nvar,term>::fac;}
 };
+
+
 
 
 // Recursive template classes for multiplication.
@@ -272,7 +274,7 @@ struct polynomial_multiplier
 {
   // _add_ the product between p1 and p2 to dst.
   static void mul(numtype POLYMUL_RESTRICT dst[], const numtype p1[], const numtype p2[])
-  { 
+  {
     polynomial_multiplier<numtype,Nvar,Ndeg1,Ndeg2-1>::mul(dst,p1,p2);
     polynomial_multiplier<numtype,Nvar,Ndeg1,Ndeg2>
       ::mul_monomial(dst,p1,p2+binomial<Nvar+Ndeg2-1,Ndeg2-1>::value);
@@ -336,7 +338,7 @@ template<class numtype, int Ndeg1, int Ndeg2>
   {
     for (int i=0;i<=Ndeg1;i++)
       for (int j=0;j<=Ndeg2;j++)
-	dst[i+j] += p1[i]*p2[j];
+      dst[i+j] += p1[i]*p2[j];
   }
   static void mul_monomial(numtype POLYMUL_RESTRICT dst[], const numtype p1[], const numtype m2[])
   {
@@ -1180,6 +1182,33 @@ struct differentiator<numtype, 1, Ndeg, 0>
   }
 };
 
+template<class numtype, int Nvar, int Ndeg,int Ndegp>
+struct composer
+{
+  // P must have p[0] = 0, in that case compute
+  // sum_n=0..Ndeg c[n]p^n = c[0] + p*R, R a lower
+  // degree composition.
+  static void compose0(numtype dst[], const numtype p[], const numtype c[])
+  {
+    composer<numtype,Nvar,Ndeg-1,Ndegp>::compose0(dst,p,c+1);
+    //Zero top of dst
+    for (int i=polylen<Nvar,Ndeg-1>::len;i<polylen<Nvar,Ndeg>::len;i++)
+      dst[i] = 0;
+    // We now have R in dst, multiply by p and add c[0]
+    taylor_inplace_multiplier<numtype,Nvar,Ndeg,Ndeg<Ndegp?Ndeg:Ndegp,0>::mul(dst,p);
+    dst[0] = c[0];
+  }
+};
+
+template<class numtype, int Nvar, int Ndegp>
+struct composer<numtype,Nvar,0,Ndegp>
+{
+  static void compose0(numtype dst[], const numtype p[], const numtype c[])
+  {
+    dst[0] = c[0];
+  }
+};
+
 #ifdef POLYMUL_TAB
 #include "polymul_tab.h"
 #endif
@@ -1210,16 +1239,36 @@ class polynomial
     { 
       c[0] = c0;
       for (int i=1;i<size;i++)
-	c[i] = numtype(0);
+	c[i] = 0;
     }
   template<class T>
   polynomial<numtype, Nvar, Ndeg> &operator=(const T &c0)
     {
-      c[0] = numtype(c0);
+      c[0] = c0;
       for (int i=1;i<size;i++)
-	c[i] = numtype(0);
+	c[i] = 0;
       return *this;
     }
+#if 0
+  template<int Ndeg2>
+  polynomial<numtype, Nvar, Ndeg> &
+  operator=(const polynomial<numtype, Nvar, Ndeg2> &ref)
+  {
+    if (ref.size < int(size)) 
+      {
+	for (int i=0;i<size;i++)
+	  c[i] = ref.c[i];
+	for (int i=ref.size;i<size;i++)
+	  c[i] = 0;
+      }
+    else
+      {
+	for (int i=0;i<size;i++)
+	  c[i] = ref.c[i];
+      }
+    return *this;
+  }
+#endif
   const numtype &operator[](int i) const
   {
     assert(i>=0);
@@ -1237,7 +1286,7 @@ class polynomial
   // polynomial has higher degree than this.
   // TODO: Allow also change of Nvar
   template<class numtype2, int Ndeg2>
-  void convert_to(polynomial<numtype2, Nvar, Ndeg2> &dst)
+  void convert_to(polynomial<numtype2, Nvar, Ndeg2> &dst) const
   {
     if (size < int(dst.size)) 
       {
@@ -1251,6 +1300,67 @@ class polynomial
 	for (int i=0;i<dst.size;i++)
 	  dst.c[i] = c[i];
       }
+  }
+  // tensor is pointer to a closed packed array
+  // T a[Ntens][Ntens] ..[Ntens] (Nvar dimensions)
+  // Note that the degree of each dimension in the tensor
+  // is Ntens-1, not Ntens.
+  template<int Ntens>
+  void from_tensor(const numtype *tensor)
+  {
+    int exponents[Nvar] = {0};
+    for (int term=0;term<size;term++)
+      {
+	int base = 1;
+	int it = 0;
+	for (int i=Nvar-1;i>=0;i--)
+	  {
+	    if (exponents[i] >= Ntens)
+	      {
+		c[term] = 0;
+		goto skip;
+	      }
+	    it += exponents[i]*base;
+	    base *= Ntens;
+	  }
+	c[term] = tensor[it];
+      skip:
+	polynomial<numtype,Nvar,Ndeg>::next_exponents(Nvar,exponents);    
+      }
+  }
+  template<int Ntens>
+  void to_tensor(numtype *tensor) const
+  {
+    int exponents[Nvar] = {0};
+    for (int term=0;term<size;term++)
+      {
+	int base = 1;
+	int it = 0;
+	for (int i=Nvar-1;i>=0;i--)
+	  {
+	    if (exponents[i] >= Ntens)
+	      goto skip;
+	    it += exponents[i]*base;
+	    base *= Ntens;
+	  }
+	tensor[it] = c[term];
+      skip:
+	polynomial<numtype,Nvar,Ndeg>::next_exponents(Nvar,exponents);    
+      }
+  }
+  template<int N>
+  polynomial<numtype,Nvar-1,N> &pick_order(void)
+  {
+    assert(N<=Ndeg);
+    return *reinterpret_cast<polynomial<numtype,Nvar-1,N> *>
+      (c+polymul_internal::polylen<Nvar,N-1>::len);
+  }
+  template<int N>
+  const polynomial<numtype,Nvar-1,N> &pick_order(void) const
+  {
+    assert(N<=Ndeg);
+    return *reinterpret_cast<const polynomial<numtype,Nvar-1,N> *>
+      (c+polymul_internal::polylen<Nvar,N-1>::len);
   }
 
   // This is a _very slow_ function to get the exponents
@@ -1327,9 +1437,16 @@ class polynomial
       }
   }
   template<int var>
-  void diff(polynomial<numtype, Nvar, Ndeg-1> &dp)
+  void diff(polynomial<numtype, Nvar, Ndeg-1> &dp) const
   {
     polymul_internal::differentiator<numtype,Nvar,Ndeg,var>::diff(dp.c,c);
+  }
+  template<int var>
+  void diff(polynomial<numtype, Nvar, Ndeg> &dp) const
+  {
+    polymul_internal::differentiator<numtype,Nvar,Ndeg,var>::diff(dp.c,c);
+    for (int i=polynomial<numtype,Nvar,Ndeg-1>::size;i<size;i++)
+      dp.c[i] = 0;
   }
   numtype c[size];
 };
@@ -1358,10 +1475,10 @@ inline void taylormul(polynomial<numtype, Nvar,Ndeg> & POLYMUL_RESTRICT dst,
 
 template<class numtype, int Nvar, int Ndeg, int Ndeg2>
 inline void taylormul(polynomial<numtype, Nvar,Ndeg> & POLYMUL_RESTRICT p1,
-	       const polynomial<numtype, Nvar,Ndeg2> &p2)
+		      const polynomial<numtype, Nvar,Ndeg2> &p2)
 {
-  assert(Ndeg2 <= Ndeg);
-  polymul_internal::taylor_inplace_multiplier<numtype,Nvar,Ndeg,Ndeg2,0>
+  polymul_internal
+    ::taylor_inplace_multiplier<numtype,Nvar,Ndeg,Ndeg2<Ndeg ? Ndeg2 : Ndeg,0>
     ::mul(p1.c,p2.c);
 }
 
@@ -1409,7 +1526,7 @@ template<class numtype, int Nvar, int Ndeg>
 void polydfac(polynomial<numtype, Nvar, Ndeg> &p)
 {
   polymul_internal
-    ::deriv_fac_multiplier<numtype,Nvar,
+    ::deriv_fac_multiplier<numtype,Nvar,0,
        polymul_internal::polylen<Nvar,Ndeg>::len-1>::mul_fac(p.c);   
 }
 
@@ -1427,6 +1544,31 @@ void polytrans(polynomial<numtype, Nvar_dst,Ndeg> &dst,
     ::trans(tmp.c,dst.c,src.c,T);
 }
 
+
+// dst = sum_n=0..Ndeg c[n]p^n, result is truncated at degree Ndeg.
+template<class numtype, int Nvar, int Ndeg, int Ndegp>
+inline void taylorcompose0(polynomial<numtype, Nvar,Ndeg> &dst,
+			  const polynomial<numtype, Nvar,Ndegp> &p,
+			  const numtype c[Ndeg+1])
+{
+  polymul_internal::composer<numtype,Nvar,Ndeg,Ndegp>
+    ::compose0(dst.c,p.c,c);
+}
+
+template<class numtype, int Nvar, int Ndeg, int Ndegp>
+inline void taylorcompose(polynomial<numtype, Nvar,Ndeg> &dst,
+			  const polynomial<numtype, Nvar,Ndegp> &p,
+			  const numtype c[Ndeg+1])
+{
+  for (int i=0;i<dst.size;i++)
+    dst[i] = 0;
+  for (int i=Ndeg;i>0;i--)
+    {
+      dst[0] += c[i];
+      taylormul(dst,p);
+    }
+  dst[0] += c[0];
+}
 
 #endif
 
