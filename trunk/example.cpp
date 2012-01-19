@@ -1,5 +1,5 @@
 #include <iostream>
-#include "taylor.h"
+#include "taylor.hpp"
 
 // This is a very small example of taking derivatives
 // using libtaylor. 

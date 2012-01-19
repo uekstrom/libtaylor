@@ -2,7 +2,7 @@
 
 using namespace std;
 
-#include "taylor.h"
+#include "taylor.hpp"
 typedef double num_t;
 
 // Some taylor coefficients around x = 2.5, calculated using
@@ -31,6 +31,14 @@ const num_t atan_good[] = {1.1902899496825317,
 			    1.336092873197889e-3,
 			    -3.310338712605161e-4};
 
+// at 0.3
+const num_t acos_good[] = {1.266103672779499,
+			   -1.048284836721918,
+			   -1.727942038552613e-1,
+			   -2.489586819892653e-1,
+			   -1.658874436238772e-1,
+			   -1.996748716672503e-1,
+			   -1.959637313366269e-1};
 
 //exp(1/(2.5 + 3x + 7y))
 const num_t composed_good[] = { 1.49182469764127,
@@ -119,7 +127,9 @@ taylor<T,2,N> binomial_generating_function(void)
 int main(void)
 {
   num_t x0 = 2.5;
+  num_t x1 = 0.3;
   taylor<num_t,1,6> tin(x0,0);
+  taylor<num_t,1,6> tin1(x1,0);
   int res = 0;
 
   cout.precision(16);
@@ -128,6 +138,7 @@ int main(void)
   res += taylor_check("exp",exp(tin),exp_good,1e-15);
   res += taylor_check("log",log(tin),log_good,1e-15);
   res += taylor_check("atan",atan(tin),atan_good,1e-15);
+  res += taylor_check("acos",acos(tin1),acos_good,1e-15);
 
   // Test multidimensional multiply consistency
   taylor<num_t,4,5> tmul(0),tacc(1),t1,t2,t3;
