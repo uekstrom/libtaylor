@@ -321,6 +321,23 @@ void taylor_gauss(T *out, const T &x0, T tmp[1], int ndeg, double p)
 }
 
 
+// At x0=0 the Taylor expansion multiplied by 2*k-1 (term wise) is equal to the taylor exp. of
+// 2x/sqrt(1+x). 
+template<typename T>
+void taylor_sqrtx_asinh_sqrtx(T *out, const T &x0, T tmp[2], int ndeg)
+{
+  tmp[0] = sqrt(x0);
+  out[0] = asinh(tmp[0]);
+  out[0] *= tmp[0];
+  if (ndeg < 1)
+    return;
+  out[1] = 2*p*x0*out[0];
+  if (ndeg < 2)
+    return;
+
+}
+
+
 int main()
 {
   int ndeg = 5;
