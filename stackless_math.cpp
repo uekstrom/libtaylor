@@ -258,8 +258,13 @@ template<typename T>
 void taylor_expm1(T *out, const T &x0, int ndeg)
 {
   out[0] = expm1(x0);
+#ifdef TAYLOR_FAST
   if (ndeg>0)
-    out[1] = out[0]+1; // TODO: would it help to use exp() here?
+    out[1] = out[0]+1;
+#else
+  if (ndeg>0)
+    out[1] = exp(x0);
+#endif
   for (int k=1;k<ndeg;k++)
     out[k+1] = out[k]/(k+1);
 }
@@ -321,20 +326,88 @@ void taylor_gauss(T *out, const T &x0, T tmp[1], int ndeg, double p)
 }
 
 
-// At x0=0 the Taylor expansion multiplied by 2*k-1 (term wise) is equal to the taylor exp. of
-// 2x/sqrt(1+x). 
-template<typename T>
-void taylor_sqrtx_asinh_sqrtx(T *out, const T &x0, T tmp[2], int ndeg)
-{
-  tmp[0] = sqrt(x0);
-  out[0] = asinh(tmp[0]);
-  out[0] *= tmp[0];
-  if (ndeg < 1)
-    return;
-  out[1] = 2*p*x0*out[0];
-  if (ndeg < 2)
-    return;
+/*
+  Upward-downward recursive method for f(x) = asinh(sqrt(x))/sqrt(x)
 
+  The function satisfies the recurrence relation
+  2x f^(n+1) = h^(n) - (2n+1)f^(n), where h(x) = 1/sqrt(1+x).
+  This is upwards unstable for small x. To use downward recursion
+  one can compute the derivative f^(n) directly using the theory of 
+  Hypergeometric functions. We have that f(x) = 2F1(1/2,1/2;3/2;-x).
+  This Taylor series converges more slowly for higher derivatives,
+  and should not be used. 
+  Using 15.1.7 and 15.2.6 in Abramovitz and Stegun we can write
+  f^(n) = (-1)^n*(1/2)_n^2/(3/2)_n*(1+x)^(1/2-n) 2F1(1,1;3/2+n;-x),
+  where (.)_n is the rising Pochhammer symbol.
+  This hypergeometric function converges more rapidly for larger
+  n, and is suitable for use. 
+  
+  The strategy is to use downward recursion for small x,
+  and upward for large. The value f^(0) can be accurately 
+  computed using the original definition of the function for 
+  all positive x, so always use that.
+
+  If branches are acceptable some small savings can be had by testing
+  x at the top of the function and skip the taylor part if not needed.
+ */
+template<typename T>
+void taylor_asinh_sqrtx_div_sqrtx(T *out, const T &x0, T tmp[2], int ndeg)
+{
+#ifdef TAYLOR_FAST
+  // These constants are appropriate for double precision.
+  const double xc = 0.01; const int nterms = 6; // Less accurate but good up to order 3.
+#else
+  const double xc = 0.1; const int nterms = 12; // More accurate and to higher orders.
+  // For very high accuracy use xc=0.5 and nterms=40.
+#endif
+  /* 
+     assert x0>0.
+     TODO: Taylor coeffs instead of derivatives!
+   */
+  tmp[0] = 1 + x0;
+  tmp[1] = sqrt(tmp[0]); 
+  tmp[0] = sqrt(x0);
+  out[0] = asinh(tmp[0]); // possibly more accurate than log(sqrt(x)+sqrt(1+x)) for small x.
+  out[0] /= tmp[0];
+  if (ndeg<1)
+    return;
+  // accumulate fn into tmp[1]
+  tmp[0] = 1/(1+x0);
+  if (ndeg > 1)
+    {
+      out[1] = -0.5*tmp[0]/tmp[1]; //h1. Now tmp[1] is free
+      tmp[1] = 0.5/tmp[1];
+      tmp[1] -= 0.5*out[0];
+      tmp[1] /= x0; // tmp[1] contains f1 here
+      for (int n=1;n<ndeg-1;n++)
+	{
+	  tmp[1] = (out[n]-(2*n+1)*tmp[1])/(2*(n+1)*x0);
+	  out[n+1] = -(n+0.5)/(n+1.0)*tmp[0]*out[n];  // Now hn is in out[1]..out[ndeg-1]
+	}
+      out[ndeg] = (out[ndeg-1] - (2*ndeg-1)*tmp[1])/(2*ndeg*x0);
+    }
+  else
+    {
+      tmp[1] = 0.5/tmp[1];
+      out[1] = (tmp[1]-0.5*out[0])/x0; // put f1 in out[1]
+    }
+  // Coefficient conversion until here
+  // Taylor part.
+  if (ndeg>1)
+    tmp[0] = (-(ndeg-0.5)/(ndeg*(2*ndeg+1.0)))*out[ndeg-1];
+  else
+    tmp[0] = (-1.0/3.0)*tmp[1];
+  tmp[1] = tmp[0];
+  for (int k=1; k < nterms; k++ )
+    {
+      tmp[0] *= (-k/(0.5+ndeg+k))*x0;
+      tmp[1] += tmp[0];
+    }
+  // Pick best fn
+  if (x0 < xc)
+    out[ndeg] = tmp[1];
+  for (int n=ndeg-1;n>0;n--)
+    out[n] = (out[n] - 2*x0*(n+1)*out[n+1])/(2*n+1);
 }
 
 
@@ -343,7 +416,16 @@ int main()
   int ndeg = 5;
   long double c[ndeg+1];
   long double tmp[2];
-  taylor_atanh(c,(long double)1e-6,tmp,ndeg);
+  long double x = (long double)(0.01-1e-15);
+  cout << "ndeg " << ndeg << endl;
+  taylor_asinh_sqrtx_div_sqrtx(c,x,tmp,ndeg);
+  cout.precision(17);
+  for (int k=0;k<=ndeg;k++)
+    cout << k << " " << c[k] << endl;
+
+  ndeg = 1;
+  cout << "ndeg " << ndeg<< endl;
+  taylor_asinh_sqrtx_div_sqrtx(c,x,tmp,ndeg);
   cout.precision(17);
   for (int k=0;k<=ndeg;k++)
     cout << k << " " << c[k] << endl;
