@@ -498,7 +498,7 @@ void taylor_asinh_sqrtx_div_sqrtx(T *out, const T &x0, T tmp[2], int ndeg)
       // Upwards recursion.
       double s = sqrt(x0);
       double t = sqrt(1+x0);
-      out[0] = log(s+t)/s; //accurate because x0 is not too small. Unclear if asinh() is faster than this.
+      out[0] = log(s+t)/s; //accurate because x0 is not too small, and typically faster than asinh.
       if (ndeg<1)
 	return;
       double hn = 1/t;
