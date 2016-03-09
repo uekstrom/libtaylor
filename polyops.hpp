@@ -213,8 +213,7 @@ void taylor_compose(int nvar, int ndeg,
     y[i] = 0;
   for (int i=ndeg-1;i>=0;i--)
     {
-      polymul_set_trunc_noconstb(nvar,y,ndeg,y,ndeg,x,ndeg);
-      //      taylormul_add(nvar,ndeg,y,y,x);
+      polymul_set_trunc_noconstb(nvar,y,ndeg-i,y,ndeg-i-1,x,ndeg-i);
       y[0] += c[i];
     }
 }
