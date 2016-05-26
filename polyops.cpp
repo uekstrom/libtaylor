@@ -17,7 +17,7 @@ int main()
       a[i] = 0;
       b[i] = 2.13+i;
     }
-  //  b[0] = 0;
+  b[0] = 0;
   polymul::taylorcompose0<double,3,3,3>(a,b,c.c);
   taylor_compose(3,3,aa.c,b.c,c.c);
   //  taylormul_set(4,3,c.c,a.c,b.c);

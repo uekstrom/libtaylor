@@ -119,7 +119,6 @@ void polymul_set_trunc(int nvar,
   assert(cdeg <= adeg+bdeg);
   if (nvar == 0)
     {
-      printf("set trunc\n");
       c[0] = a[0]*b[0];
     }
   else
@@ -153,7 +152,7 @@ void polymul_set_trunc_noconstb(int nvar,
     }
   else
     {
-      for (i=cdeg;i>=0;i--)
+      for (i=cdeg;i>0;i--)
 	{
 	  int u = MIN(bdeg,i);
 	  int l = MAX(1,i-adeg);
