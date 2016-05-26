@@ -165,6 +165,21 @@ void polymul_set_trunc_noconstb(int nvar,
 }
 
 
+/*
+  Compute y = sum_i=0,ndeg c[i]*(x-x0)^i = c[0] + (x-x0)*(c[1] + (x-x0)*(..))
+ */
+template<typename T, typename S>
+void taylor_compose(int nvar, int ndeg,
+		   T y[], const T x[], const S c[])
+{
+  y[0] = c[ndeg];
+  for (int i=ndeg-1;i>=0;i--)
+    {
+      polymul_set_trunc_noconstb(nvar,y,ndeg-i,y,ndeg-i-1,x,ndeg-i);
+      y[0] = c[i];
+    }
+}
+
 
 /* adeg = bdeg = ndeg, and truncate output at ndeg. */
 template<typename T>
@@ -210,24 +225,6 @@ void taylormul_set(int nvar, int ndeg,
     }
 }
 
-
-/*
-  Compute y = sum_i=0,ndeg c[i]*(x-x0)^i = c[0] + (x-x0)*(c[1] + (x-x0)*(..))
- */
-template<typename T, typename S>
-void taylor_compose(int nvar, int ndeg,
-		   T y[], const T x[], const S c[])
-{
-  int plen = polylen(nvar,ndeg);
-  y[0] = c[ndeg];
-  for (int i=1;i<plen;i++)
-    y[i] = 0;
-  for (int i=ndeg-1;i>=0;i--)
-    {
-      polymul_set_trunc_noconstb(nvar,y,ndeg-i,y,ndeg-i-1,x,ndeg-i);
-      y[0] = c[i];
-    }
-}
 
 
 #endif
