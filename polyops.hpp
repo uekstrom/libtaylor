@@ -31,7 +31,6 @@ int polylen(int nvar, int ndeg)
 // and the outcome is still as expected. The b[] array may not alias c[].
 
 
-// Multiply polynomials with coefficients a and b, and add the result to c.
 template<typename T>
 void polymul_add(int nvar,
 		 T c[],
@@ -39,7 +38,11 @@ void polymul_add(int nvar,
 		 const T b[], int bdeg)
 {
   int i,j;
-  if (nvar == 0)
+#ifdef POLYOPS_LOG
+  if (nvar>0)
+    printf("add %i %i %i\n",nvar,adeg,bdeg);
+#endif
+  if (nvar == 0) // TODO: Remove this when not needed by other functions.
     {
       c[0] += a[0]*b[0];
     }
@@ -54,7 +57,7 @@ void polymul_add(int nvar,
 	}
     }
 }
-
+#if 0
 // Multiply polynomials with coefficients a and b, and add the result to c.
 // Output is truncated at order cdeg
 template<typename T>
@@ -69,6 +72,16 @@ void polymul_add_trunc(int nvar,
     {
       c[0] += a[0]*b[0];
     }
+  else if (nvar == 1)
+    {
+      for (i=cdeg;i>=0;i--)
+	{
+	  int u = MIN(bdeg,i);
+	  int l = MAX(0,i-adeg);
+	  for (j=l;j<=u;j++)
+	    c[i] += a[i-j]*b[j];
+	}
+    }
   else
     {
       for (i=cdeg;i>=0;i--)
@@ -80,7 +93,7 @@ void polymul_add_trunc(int nvar,
 	}
     }
 }
-
+#endif
 // Multiply polynomials with coefficients a and b, setting c to the result.
 template<typename T>
 void polymul_set(int nvar,
@@ -89,10 +102,25 @@ void polymul_set(int nvar,
 		   const T b[], int bdeg)
 {
   int i,j;
+#ifdef POLYOPS_LOG
+  if (nvar>0)
+    printf("set %i %i %i\n",nvar,adeg,bdeg);
+#endif
   if (nvar == 0)
     {
       c[0] = a[0]*b[0];
     }
+  /*  else if (nvar == 1)
+    {
+      for (i=adeg+bdeg;i>=0;i--)
+	{
+	  int u = MIN(bdeg,i);
+	  int l = MAX(0,i-adeg);
+	  c[i] = a[i-l]*b[l];
+	  for (j=l+1;j<=u;j++)
+	    c[i] += a[i-j]*b[j];
+	}
+	} */
   else
     {
       for (i=adeg+bdeg;i>=0;i--)
@@ -107,6 +135,7 @@ void polymul_set(int nvar,
     }
 }
 
+#if 0
 // Multiply polynomials with coefficients a and b, setting c to the result. Only
 // coefficients up to degree cdeg are affected.
 template<typename T>
@@ -134,6 +163,7 @@ void polymul_set_trunc(int nvar,
 	}
     }
 }
+#endif
 
 // Multiply polynomials with coefficients a and b, setting c to the result. Only
 // coefficients up to degree cdeg are affected.
@@ -150,6 +180,20 @@ void polymul_set_trunc_noconstb(int nvar,
     {
       
     }
+  /*
+  else if (nvar == 1)
+    {
+      for (i=cdeg;i>0;i--)
+	{
+	  int u = MIN(bdeg,i);
+	  int l = MAX(1,i-adeg);
+	  if (l<=u)
+	    c[i] = a[i-l]*b[l];
+	  for (j=l+1;j<=u;j++)
+	    c[i] = a[i-j]*b[j];
+	}
+    }
+  */
   else
     {
       for (i=cdeg;i>0;i--)

@@ -1,0 +1,102 @@
+\documentclass[11pt]{amsart}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{a4paper}                   % ... or a4paper or a5paper or ... 
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage{epsfig}
+\usepackage{epstopdf}
+\usepackage{comment} 
+\usepackage{pifont}
+\usepackage{slashed}
+\usepackage{listings}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+\title{Multi-variate Taylor operations}
+\author{Ulf Ekstr\"om}
+%\date{}                                           % Activate to display a given date or no date
+
+\lstdefinestyle{codestyle}{basicstyle=\ttfamily\small}
+\lstset{style=codestyle}
+
+\begin{document}
+\maketitle
+
+
+\section{Introduction}
+We consider multivariate polynomials in $x_1, x_2, \ldots$ with the coefficients ordered in reverse graded lexicographical order, for example
+\begin{equation}
+  P_3^2 = c_0 + c_1 x_1 + c_2 x_2 + c_3 x_3 + c_4 x_1^2 + c_5 x_1 x_2 + c_6 x_1 x_3 + c_7 x_2^2 + c_8 x_2 x_3 + c_9 x_3^2.
+\end{equation}
+An $N$:th order polynomial $P^K_N$ in $K$ variables has 
+\begin{equation}
+\#P^K_N = {N+K \choose K}
+\end{equation}
+coefficients. Lengths of moderately sized polynomials can be computed by the C program
+\begin{lstlisting}[language=C]
+int polylen(int nvar, int ndeg)
+{
+  int i, val = 1;
+  if (ndeg < 0)
+    return 0;
+  for (i=1;i<=ndeg;i++)
+    val = (val*(nvar+i))/i;
+  return val;
+}
+\end{lstlisting}
+Returning the value 0 for negative orders simplifies some recursions
+later on.
+
+\clearpage
+\section{Polynomial multiplication}
+Multiplication can be formulated recursively by noting
+that the order $N$ terms of $P_N^K$ can be viewed as an $N$:th order
+polynomial in $K-1$ variables, where the $x_1$ variable has been supressed. Schematically we have
+\begin{equation}
+  P_N^K\cdot Q_M^K = \left[P_{0}^{K-1} \ldots P_N^{K-1}\right]\cdot\left[Q_{0}^{K-1} \ldots Q_M^{K-1}\right],
+\end{equation}
+which can be computed by multiplication functions for $K-1$
+variables. Ultimately the recursion can be terminated in the one or
+zero variable cases. This may be implemented in C as
+\begin{lstlisting}[language=C]
+void polymul_add(int nvar, double c[], const double a[], int adeg, 
+                                       const double b[], int bdeg) 
+{
+  int i,j;
+  if (nvar == 0)
+    c[0] += a[0]*b[0];
+  else
+    for (i=adeg+bdeg;i>=0;i--)
+      {
+	int u = MIN(bdeg,i);
+	int l = MAX(0,i-adeg);
+	for (j=l;j<=u;j++)
+	polymul_add(nvar-1, c + polylen(nvar,i-1), 
+                            a + polylen(nvar,i-j-1), i-j, 
+                            b + polylen(nvar,j-1), j);
+      }
+}
+\end{lstlisting}
+This function computes $C^K_{N+M} := C^K_{N+M} + A_N^K\cdot B^K_M$,
+with $K =$ \texttt{nvar}, $N =$ \texttt{adeg} and $M
+=$ \texttt{bdeg}. The order of the output can easily be truncated by
+modifying the starting value of \texttt{i=adeg+bdeg} in the outer
+loop. The operations are ordered to allow calculations of $C = C +
+C\cdot B$, i.e. to have \texttt{a == c} on input to the function.
+Several optimization opportunities exist in the code, for example the
+recursion may be terminated at \texttt{nvar == 1}, and the repeated calls
+of \texttt{polylen()} may be optimized. The most effective method for small
+polynomials is to completely unroll the multiplication function.
+
+Often one is interested in combining the multiplication with an
+assignment without having to zero the destination array first,
+i.e. the operation $C := A\cdot B$. This can be implemented by
+creating a modified version of \texttt{polymul\_add}, called for
+example \texttt{polymul\_set}, with the only difference that one has
+\texttt{c[0] = a[0]*b[0]} in the \texttt{nvar==0} case, and that it
+recursively calls \texttt{polymul\_set} the first time through the
+\texttt{j} loop. Note that this function can compute $C:=C\cdot B$
+``in-place'', without using temporary storage. It can, however, not compute $C:= C^2$.
+
+
+\end{document}

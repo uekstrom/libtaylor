@@ -24,7 +24,7 @@ int main()
   for (i=0;i<polylen(3,3);i++)
     {
       //      if (a[i] != aa[i])
-	printf("%i %lf %lf\n",i, a[i], aa[i]);
+      printf("%i %lf %lf %lf\n",i, a[i], aa[i],a[i] - aa[i]);
     }
   return 0;
 } 
