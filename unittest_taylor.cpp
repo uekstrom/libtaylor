@@ -141,13 +141,18 @@ int main(void)
   res += taylor_check("acos",acos(tin1),acos_good,1e-15);
 
   // Test multidimensional multiply consistency
-  taylor<num_t,4,5> tmul(0),tacc(1),t1,t2,t3;
+  taylor<num_t,4,5> tmul(0),tacc(1),t1,t2,t3,t4,t5;
   for (int i=0;i<t1.size;i++)
     {
       t1[i] = i+1;
       t2[i] = -3+i*i;
       t3[i] = i + i*i + 1;
     }
+  // test in-place multiplication
+  t4 = t3;
+  t4 *= t4;
+  t5 = t3*t3;
+  res += taylor_compare(t4,t5,1e-16);
   // multiplication should commute
   tacc=t1;
   tacc*=t2;

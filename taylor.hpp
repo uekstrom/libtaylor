@@ -199,7 +199,15 @@ public:
   template<int Ndeg2>
   void operator*=(const taylor<T, Nvar,Ndeg2>& t)
   {
-    polymul::taylormul(*this,t);
+    if (&t != this)
+      {
+	polymul::taylormul(*this,t);
+      }
+    else
+      {
+	taylor<T, Nvar, Ndeg> tmp = *this;
+	*this *= tmp;
+      }
   }
   /* Put sum_i coeff[i]*(this - this[0])^i in res,
      used when evaluating analytical functions of this */
