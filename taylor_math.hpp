@@ -1,5 +1,33 @@
+/*
+Copyright (c) 2009-2017 Ulf Ekstrom <uekstrom@gmail.com>
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#ifndef TAYLOR_MATH_H
+#define TAYLOR_MATH_H
+
 // By Ulf Ekstrom March-June 2009.
-// Elementary functions. For inclusion in taylor.h only!
+// Elementary functions. For inclusion in taylor.hpp only!
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -226,7 +254,7 @@ static taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, const S &a)
 // when the exponent is also a taylor expansion use
 // t^a = exp(a*log(t))
 template<class T,int Nvar, int Ndeg>
-static taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, 
+static taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t,
 			const taylor<T,Nvar,Ndeg> &a)
 {
   return exp(a*log(t));
@@ -286,7 +314,7 @@ static taylor<T,Nvar,Ndeg> cbrt(const taylor<T,Nvar,Ndeg> &t)
 
 
 // Integer exponent version is analytical at t[0] = 0
-// This function gets priority over the normal pow 
+// This function gets priority over the normal pow
 // when the exponent is an integer, but does not force
 // conversion to integer.
 template<class T,int Nvar, int Ndeg>
@@ -303,7 +331,7 @@ static taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, int n)
     {
       return 1/pow(t,-n);
     }
-  else 
+  else
     {
       taylor<T,Nvar,Ndeg> res(1);
       return res;
@@ -342,7 +370,7 @@ static taylor<T,Nvar,Ndeg> atan(const taylor<T,Nvar,Ndeg> &t)
 }
 
 
-/* 
+/*
    Taylor expansion of exp(-(a+x)^2) =
    exp(-a^2-2a*x)*exp(-x^2)
  */
@@ -426,7 +454,7 @@ static void sin_taylor(taylor<T,1,Ndeg>& t, const T &a)
     else
     {
 	t[0] = sin(a);
-    }   
+    }
 }
 
 template<class T,int Nvar, int Ndeg>
@@ -460,7 +488,7 @@ static void cos_taylor(taylor<T,1,Ndeg>& t, const T &a)
     else
     {
 	t[0] = cos(a);
-    }   
+    }
 }
 
 
@@ -551,7 +579,7 @@ static taylor<T,Nvar,Ndeg> sinc(const taylor<T,Nvar,Ndeg> &t)
     {
 	taylor<T,1,Ndeg+8> tmp;
 	sinc_taylor_at0(tmp);
-	taylor<T,1,Ndeg> tmp2;	
+	taylor<T,1,Ndeg> tmp2;
 	T dx = t[0];
 	tmp.shift(tmp2,&dx);
 	taylor<T,Nvar,Ndeg> res;
@@ -581,12 +609,12 @@ static taylor<T,Nvar,Ndeg> sqrtx_asinh_sqrtx(const taylor<T,Nvar,Ndeg> &t)
 			     1.235072285222234e4,
 			     4.691117148130619e3,
 			     9.119186273274577e2,
-			     7.815848629220836e1,	     
+			     7.815848629220836e1,
 			     1.96088643023654e0};
   static const T Q[] = {3.510921856028398e3,
 			     1.29475924799926e4,
 			     1.924308297963337e4,
-			     1.474357149568687e4,    
+			     1.474357149568687e4,
 			     6.176496729255528e3,
 			     1.379806958043824e3,
 			     1.471833349002349e2,
@@ -632,3 +660,5 @@ static taylor<T,Nvar,Ndeg> max(const taylor<T,Nvar,Ndeg> &a,
   else
     return b;
 }
+
+#endif // TAYLOR_MATH_H

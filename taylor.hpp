@@ -1,7 +1,5 @@
-#ifndef TAYLOR_H
-#define TAYLOR_H
 /*
-Copyright (c) 2009-2015 Ulf Ekstrom <uekstrom@gmail.com>
+Copyright (c) 2009-2017 Ulf Ekstrom <uekstrom@gmail.com>
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -25,6 +23,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifndef TAYLOR_H
+#define TAYLOR_H
 #include <cmath>
 #include "polymul.hpp"
 
@@ -51,13 +51,13 @@ public:
   // This does not work when T is a int. One ugly solution is to
   // specialize taylor for int T's, but perhaps not so useful?
   template<typename S>
-  taylor(const S &c0) : polymul::polynomial<T, Nvar,Ndeg>(T(c0)) {} 
-  //  taylor(double c0) : polynomial<T, Nvar,Ndeg>(T(c0)) {} 
-  //  taylor(const T &c0) : polynomial<T, Nvar,Ndeg>(c0) {} 
+  taylor(const S &c0) : polymul::polynomial<T, Nvar,Ndeg>(T(c0)) {}
+  //  taylor(double c0) : polynomial<T, Nvar,Ndeg>(T(c0)) {}
+  //  taylor(const T &c0) : polynomial<T, Nvar,Ndeg>(c0) {}
   // Set the constant term to c0 and the first order term of
   // variable var to var_value.
   template<typename S>
-  taylor(const S &c0, int var) : polymul::polynomial<T, Nvar,Ndeg>(T(c0)) 
+  taylor(const S &c0, int var) : polymul::polynomial<T, Nvar,Ndeg>(T(c0))
   {
     assert(var>=0);
     assert(var<Nvar);
@@ -65,7 +65,7 @@ public:
       c[var+1] = 1;
   }
   template<typename S, typename U>
-  taylor(const S &c0, int var, const U &var_value) : polymul::polynomial<T, Nvar,Ndeg>(T(c0)) 
+  taylor(const S &c0, int var, const U &var_value) : polymul::polynomial<T, Nvar,Ndeg>(T(c0))
   {
     assert(var>=0);
     assert(var<Nvar);
@@ -98,8 +98,8 @@ public:
     p = *reinterpret_cast<const taylor<T,Nvar-1,N> *>
       (c+polymul_internal::polylen<Nvar,N-1>::len);
   }
-  
-  // Multiply each term with the correct factorials to get 
+
+  // Multiply each term with the correct factorials to get
   // derivatives, i.e. x^2y^3 is multiplied by 2!3!
   void deriv_facs(void)
   {
@@ -262,7 +262,7 @@ public:
 template<int Ndim, class T, int Nvar, int Ndeg>
 struct tensored_taylor
 {
-  typedef taylor<typename 
+  typedef taylor<typename
     tensored_taylor<Ndim-1,T,Nvar,Ndeg>::type,Nvar,Ndeg> type;
 };
 
@@ -336,7 +336,7 @@ static taylor<T, Nvar, Ndeg> operator*(const taylor<T, Nvar,Ndeg>& t, const S& x
 }
 
 template<class T, int Nvar, int Ndeg>
-static taylor<T, Nvar, Ndeg> operator*(const taylor<T, Nvar,Ndeg>& t1, 
+static taylor<T, Nvar, Ndeg> operator*(const taylor<T, Nvar,Ndeg>& t1,
 				const taylor<T, Nvar,Ndeg>& t2)
 {
   taylor<T, Nvar,Ndeg> tmp;
@@ -404,7 +404,7 @@ static taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t, int x)
 */
 
 template<class T, int Nvar, int Ndeg>
-static taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t1, 
+static taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t1,
 				const taylor<T, Nvar,Ndeg>& t2)
 {
   taylor<T, Nvar,Ndeg> tmp;
@@ -427,7 +427,7 @@ static std::ostream &operator<<(std::ostream& stream, const taylor<num,Nvar,Ndeg
     stream << ", " << t[i];
   stream << "}";
   return stream;
-} 
+}
 
 #else
 

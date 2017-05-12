@@ -1,3 +1,28 @@
+/*
+Copyright (c) 2009-2017 Ulf Ekstrom <uekstrom@gmail.com>
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 #include <iostream>
 
 using namespace std;
@@ -62,8 +87,8 @@ int taylor_check(const char *label,
       T err = 2*fabs(t[i] - correct[i])/(1 + fabs(correct[i]));
       if (err > thres)
 	{
-	  cout << "Error in coefficient " << i << " of " << label 
-	       << ". Correct:" << correct[i] << ", taylor:" << t[i] 
+	  cout << "Error in coefficient " << i << " of " << label
+	       << ". Correct:" << correct[i] << ", taylor:" << t[i]
 	       << " error: " <<  correct[i] - t[i] << endl;
 	  nfail++;
 	}
@@ -82,8 +107,8 @@ int taylor_compare(const taylor<T,Nvar,Ndeg>& t1,
       T err = 2*fabs(t1[i] - t2[i])/(1 + 0.5*fabs(t1[i]+t2[i]));
       if (err > thres)
 	{
-	  cout << "Difference in coefficient " << i << ". Correct:" 
-	       << t1[i] << ", taylor:" << t2[i] << " difference: " <<  
+	  cout << "Difference in coefficient " << i << ". Correct:"
+	       << t1[i] << ", taylor:" << t2[i] << " difference: " <<
 	    t1[i] - t2[i] << endl;
 	  nfail++;
 	}
@@ -176,7 +201,7 @@ int main(void)
     num_t x[2] = {3,7.1};
     if (fabs(p.eval(x)-473.26)/473.26 > 1e-15)
       {
-	cout << "Error evaluating multivariate, error " << 
+	cout << "Error evaluating multivariate, error " <<
 	  p.eval(x)-473.26 << endl;
 	res++;
       }
@@ -189,7 +214,7 @@ int main(void)
     num_t r[4] = {3.1,4,5,6};
     if (fabs(pp.eval(r) - p1.eval(r)*p2.eval(r)) > 1e-15*fabs(pp.eval(r)))
     {
-	cout << "Error evaluating multivariate:" << pp.eval(r) 
+	cout << "Error evaluating multivariate:" << pp.eval(r)
 	     << " " << p1.eval(r)*p2.eval(r) << endl;
 	res++;
     }
@@ -199,7 +224,7 @@ int main(void)
       pv[i][1] = i;
     pr = tin.eval(pv);
   }
-  
+
   // composition
   taylor<num_t,2,2> p(2.5);
   p[1] = 3;
@@ -226,10 +251,10 @@ int main(void)
     for (int j=0;i+j<=10;j++)
       {
 	int ij[2] = {i,j};
-	if (fabs(nchoosek[nchoosek.term_index(ij)] - 
+	if (fabs(nchoosek[nchoosek.term_index(ij)] -
 		 stupid_binomial(j,i)) > 1e-15)
 	  {
-	    cout << 
+	    cout <<
 	      "Error evaluating binomial coefficients by generating function\n";
 	    res++;
 	  }
