@@ -29,11 +29,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 // By Ulf Ekstrom March-June 2009.
 // Elementary functions. For inclusion in taylor.hpp only!
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+#include <cmath>
 
 #ifdef _MSC_VER
+#define _USE_MATH_DEFINES
 #include "micromath.hpp"
 #endif
 
