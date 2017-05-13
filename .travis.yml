@@ -3,22 +3,8 @@ sudo: false
 matrix:
   include:
     - os: linux
-      compiler: clang
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-precise-3.5
-            - ubuntu-toolchain-r-test
-            - george-edison55-precise-backports
-          packages:
-            - cmake
-            - cmake-data
-            - clang-3.5
-      env:
-        - CXX_COMPILER='clang++-3.5'
-    - os: linux
       compiler: gcc
-      addons: &5
+      addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
@@ -32,9 +18,34 @@ matrix:
         - CXX_COMPILER='g++-4.6'
     - os: osx
       osx_image: xcode7.3
+      compiler: gcc
+      env:
+        - CXX_COMPILER='g++-4.8'
+        - HOMEBREW_GCC='homebrew/versions/gcc48'
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-precise-3.5
+            - ubuntu-toolchain-r-test
+            - george-edison55-precise-backports
+          packages:
+            - cmake
+            - cmake-data
+            - clang-3.5
+      env:
+        - CXX_COMPILER='clang++-3.5'
+    - os: osx
+      osx_image: xcode7.3
       compiler: clang
       env:
         - CXX_COMPILER='clang++'
+install:
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+      brew reinstall ${HOMEBREW_GCC}
+    fi
 before_script:
   - cmake --version
   - cd ${TRAVIS_BUILD_DIR}
@@ -43,6 +54,6 @@ before_script:
   - mkdir -p build
   - cd build
   - cmake ..
-  - cmake --build .
+  - cmake --build . VERBOSE=1
 script:
   - ctest --output-on-failure --verbose
