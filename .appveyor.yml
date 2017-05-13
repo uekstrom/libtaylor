@@ -1,0 +1,44 @@
+# See http://msdn.microsoft.com/en-us/library/ms164311.aspx for
+# command-line options to MSBuild.
+
+# Speeding up a Visual Studio build.
+# http://blogs.msdn.com/b/vcblog/archive/2011/01/05/damn-my-vc-project-is-building-slower-in-vs2010-what-do-i-do-now-a-step-by-step-guide.aspx
+version: 'build_{build}-{branch}'
+
+os:
+  - Windows Server 2012 R2
+  - Visual Studio 2015
+
+platform: x86
+
+build:
+  parallel: true
+
+environment:
+  matrix:
+    - GENERATOR: "Visual Studio 14 2015"
+      BUILDFLAGS: "/verbosity:detailed"
+    - GENERATOR: "MinGW Makefiles"
+      BUILDFLAGS: "VERBOSE=1"
+
+init:
+  - cmd: cmake --version
+
+before_build:
+  # Workaround for CMake not wanting sh.exe on PATH for MinGW
+  - set PATH=%PATH:C:\Program Files (x86)\Git\bin;=%
+  - set PATH=%PATH:C:\Program Files\Git\usr\bin;=%
+  - set PATH=C:\MinGW\bin;%PATH%
+
+build_script:
+  - mkdir build
+  - cd build
+  - cmake .. -G"%GENERATOR%"
+  # See http://msdn.microsoft.com/en-us/library/ms164311.aspx for
+  # command-line options to MSBuild.
+  - cmd: cmake --build . -- %BUILDFLAGS%
+
+test_script:
+  - cmd: ctest --output-on-failure --verbose
+
+deploy: off

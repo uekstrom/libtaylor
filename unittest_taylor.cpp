@@ -1,4 +1,36 @@
+/*
+Copyright (c) 2009-2017 Ulf Ekstrom <uekstrom@gmail.com>
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
+#include <sstream>
+#include <string>
+#ifdef _MSC_VER
+#include <iterator>
+#endif
 
 using namespace std;
 
@@ -50,6 +82,38 @@ const num_t composed_good[] = { 1.49182469764127,
 
 #define NR_COEFF_CHECK 6
 
+/// Macro and helper functions to be used to signal error conditions
+#define TAYLOR_ERROR(msg)                           \
+  {                                                 \
+    std::ostringstream errmsg;                      \
+    errmsg << std::string("Taylor fatal error.\n")  \
+            << std::string(" In function ")         \
+            << std::string(__func__)                \
+            << std::string(" at line ") << __LINE__ \
+            << std::string(" of file ")             \
+            << std::string(__FILE__)                \
+            << std::endl;                           \
+    message_and_die(errmsg.str(), msg);             \
+  }
+
+void message_and_die(const std::string & err,
+    const std::ostringstream & msg) {
+  std::fprintf(stderr, "%s\n", (err + msg.str()).c_str());
+  std::exit(EXIT_FAILURE);
+}
+
+void message_and_die(const std::string & err,
+    const std::string & msg) {
+  std::fprintf(stderr, "%s\n", (err + msg).c_str());
+  std::exit(EXIT_FAILURE);
+}
+
+void message_and_die(const std::string & err,
+    const char * c_msg) {
+  std::fprintf(stderr, "%s\n", (err + std::string(c_msg)).c_str());
+  std::exit(EXIT_FAILURE);
+}
+
 template<class T, int Nvar, int Ndeg>
 int taylor_check(const char *label,
 		 const taylor<T,Nvar,Ndeg>& t,
@@ -62,9 +126,13 @@ int taylor_check(const char *label,
       T err = 2*fabs(t[i] - correct[i])/(1 + fabs(correct[i]));
       if (err > thres)
 	{
-	  cout << "Error in coefficient " << i << " of " << label 
-	       << ". Correct:" << correct[i] << ", taylor:" << t[i] 
-	       << " error: " <<  correct[i] - t[i] << endl;
+    std::ostringstream message;
+    message << std::string("Error in coefficient ") << i
+            << std::string(" of ") << std::string(label)
+            << std::string(". Correct:") << correct[i]
+            << std::string(", taylor:") << t[i]
+            << std::string(" error: ") << correct[i] - t[i];
+    TAYLOR_ERROR(message);
 	  nfail++;
 	}
     }
@@ -82,9 +150,11 @@ int taylor_compare(const taylor<T,Nvar,Ndeg>& t1,
       T err = 2*fabs(t1[i] - t2[i])/(1 + 0.5*fabs(t1[i]+t2[i]));
       if (err > thres)
 	{
-	  cout << "Difference in coefficient " << i << ". Correct:" 
-	       << t1[i] << ", taylor:" << t2[i] << " difference: " <<  
-	    t1[i] - t2[i] << endl;
+    std::ostringstream message;
+	  message << "Difference in coefficient " << i << ". Correct:"
+	       << t1[i] << ", taylor:" << t2[i] << " difference: " <<
+	    t1[i] - t2[i];
+    TAYLOR_ERROR(message);
 	  nfail++;
 	}
     }
@@ -165,7 +235,7 @@ int main(void)
   // add and subtract a bit
   if (taylor_sumsq(tmul-tacc) > 1e-16)
     {
-      cout << "Subtraction error\n";
+      TAYLOR_ERROR("Subtraction error");
       res++;
     }
   // Evaluate multivariate polynomial and check the results
@@ -175,11 +245,12 @@ int main(void)
       p[i] = i+1;
     num_t x[2] = {3,7.1};
     if (fabs(p.eval(x)-473.26)/473.26 > 1e-15)
-      {
-	cout << "Error evaluating multivariate, error " << 
-	  p.eval(x)-473.26 << endl;
-	res++;
-      }
+    {
+      std::ostringstream message;
+      message << std::string("Error evaluating multivariate, error ") << p.eval(x)-473.26;
+      TAYLOR_ERROR(message);
+      res++;
+    }
     taylor<num_t,4,5> p1,p2,pp;
     for (int i=0;i<10;i++)
 	p1[i] = i+1;
@@ -189,9 +260,11 @@ int main(void)
     num_t r[4] = {3.1,4,5,6};
     if (fabs(pp.eval(r) - p1.eval(r)*p2.eval(r)) > 1e-15*fabs(pp.eval(r)))
     {
-	cout << "Error evaluating multivariate:" << pp.eval(r) 
-	     << " " << p1.eval(r)*p2.eval(r) << endl;
-	res++;
+      std::ostringstream message;
+      message << "Error evaluating multivariate:" << pp.eval(r)
+        << " " << p1.eval(r)*p2.eval(r);
+      TAYLOR_ERROR(message);
+      res++;
     }
     // Evaluate with taylor vars
     taylor<num_t,1,2> pv[4], pr;
@@ -199,7 +272,7 @@ int main(void)
       pv[i][1] = i;
     pr = tin.eval(pv);
   }
-  
+
   // composition
   taylor<num_t,2,2> p(2.5);
   p[1] = 3;
@@ -216,24 +289,25 @@ int main(void)
   if (index_tester.term_index(exponents1) != 12 ||
       index_tester.term_index(exponents2) != 8)
     {
-      cout << "Error in taylor::index_of()\n";
+      TAYLOR_ERROR("Error in taylor::index_of()");
       res++;
     }
 
   // Generating function binomial coeffs.
   taylor<num_t,2,10> nchoosek = binomial_generating_function<num_t,10>();
   for (int i=0;i<=10;i++)
+  {
     for (int j=0;i+j<=10;j++)
+    {
+      int ij[2] = {i,j};
+      if (fabs(nchoosek[nchoosek.term_index(ij)] -
+            stupid_binomial(j,i)) > 1e-15)
       {
-	int ij[2] = {i,j};
-	if (fabs(nchoosek[nchoosek.term_index(ij)] - 
-		 stupid_binomial(j,i)) > 1e-15)
-	  {
-	    cout << 
-	      "Error evaluating binomial coefficients by generating function\n";
-	    res++;
-	  }
+        TAYLOR_ERROR("Error evaluating binomial coefficients by generating function");
+        res++;
       }
+    }
+  }
   // Shifting
   taylor<num_t,1,6> sinx(1e-3,0),sint = sin(sinx);
   taylor<num_t,1,12> shift_sinx(0,0),shift_sint = sin(shift_sinx);
