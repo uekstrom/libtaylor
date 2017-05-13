@@ -2,8 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/uekstrom/libtaylor/master/LICENSE)
 
-[![Travis branch](https://img.shields.io/travis/uekstrom/libtaylor/master.svg?style=flat-square)]()
-[![AppVeyor branch](https://img.shields.io/appveyor/ci/uekstrom/libtaylor/master.svg?style=flat-square)]()
+[![Travis branch](https://img.shields.io/travis/uekstrom/libtaylor/master.svg?style=flat-square)](https://travis-ci.org/uekstrom/libtaylor)
+[![AppVeyor branch](https://img.shields.io/appveyor/ci/uekstrom/libtaylor/master.svg?style=flat-square)](https://ci.appveyor.com/project/uekstrom/libtaylor/branch/master)
 
 [![GitHub issues](https://img.shields.io/github/issues/uekstrom/libtaylor.svg?style=flat-square)](https://github.com/uekstrom/libtaylor/issues)
 [![GitHub forks](https://img.shields.io/github/forks/uekstrom/libtaylor.svg?style=flat-square)](https://github.com/uekstrom/libtaylor/network)
