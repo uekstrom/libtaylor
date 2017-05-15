@@ -48,13 +48,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <cassert>
 #include <cmath>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 #ifdef _MSC_VER
+#define _USE_MATH_DEFINES
 #include "micromath.hpp"
 #endif
+
 
 // Taylor math, template style
 // N is always the order of the polynomial
