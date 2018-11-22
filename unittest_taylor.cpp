@@ -82,7 +82,7 @@ const num_t composed_good[] = {1.49182469764127,
                                4.812029744711682,     // xy
                                5.614034702163628};    // y^2
 
-template <class num, int Nvar, int Ndeg>
+template <typename num, int Nvar, int Ndeg>
 void printpoly(ostream & dst, const polynomial<num, Nvar, Ndeg> & p) {
   int exps[Nvar] = {0};
   for (int i = 0; i < p.size; i++) {
@@ -121,7 +121,7 @@ void message_and_die(const std::string & err, const char * c_msg) {
 
 #define NR_COEFF_CHECK 6
 
-template <class T, int Nvar, int Ndeg>
+template <typename T, int Nvar, int Ndeg>
 int taylor_check(const char * label,
                  const taylor<T, Nvar, Ndeg> & t,
                  const num_t correct[],
@@ -142,11 +142,11 @@ int taylor_check(const char * label,
   return nfail;
 }
 
-template <class T> T error_measure(const T & x1, const T & x2) {
+template <typename T> T error_measure(const T & x1, const T & x2) {
   return 2 * fabs(x1 - x2) / (1 + 0.5 * fabs(x1 + x2));
 }
 
-template <class T, int Nvar, int Ndeg>
+template <typename T, int Nvar, int Ndeg>
 int taylor_compare(const taylor<T, Nvar, Ndeg> & t1,
                    const taylor<T, Nvar, Ndeg> & t2,
                    num_t thres) {
@@ -164,7 +164,7 @@ int taylor_compare(const taylor<T, Nvar, Ndeg> & t1,
   return nfail;
 }
 
-template <class T, int Nvar, int Ndeg>
+template <typename T, int Nvar, int Ndeg>
 T taylor_sumsq(const taylor<T, Nvar, Ndeg> & t) {
   T s = 0;
   for (int i = 0; i < t.size; i++)
@@ -186,7 +186,7 @@ long stupid_binomial(int n, int k) {
     return fac(n) / (fac(k) * fac(n - k));
 }
 
-template <class T, int N> taylor<T, 2, N> binomial_generating_function() {
+template <typename T, int N> taylor<T, 2, N> binomial_generating_function() {
   taylor<T, 2, N> x(0, 0), y(0, 1);
   return 1 / (1 - (1 + x) * y); // generating function for the binomial coefficients
 }

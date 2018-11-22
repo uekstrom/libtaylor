@@ -63,7 +63,7 @@ constexpr POW2(int N) noexcept { return (1 << N); }
   P_n*Q_n = P_n-1*Q_n-1 + P_n-1*Sn-1 + R_n-1*Q_n
 
  */
-template <class T, int Nvar> struct ctaylor_rec {
+template <typename T, int Nvar> struct ctaylor_rec {
   // Add x*y to dst
   static void mul(T * dst, const T * x, const T * y) {
     ctaylor_rec<T, Nvar - 1>::mul(dst, x, y);
@@ -107,7 +107,7 @@ template <class T, int Nvar> struct ctaylor_rec {
   }
 };
 
-template <class T> struct ctaylor_rec<T, 0> {
+template <typename T> struct ctaylor_rec<T, 0> {
   static void mul(T * dst, const T * x, const T * y) { dst[0] += x[0] * y[0]; }
   static void mul_set(T * dst, const T * x, const T * y) { dst[0] = x[0] * y[0]; }
   static void multo(T * dst, const T * y) { dst[0] *= y[0]; }
@@ -116,7 +116,7 @@ template <class T> struct ctaylor_rec<T, 0> {
   static void compose(T * res, const T * x, const T coeff[]) { res[0] = coeff[0]; }
 };
 
-template <class T> struct ctaylor_rec<T, 1> {
+template <typename T> struct ctaylor_rec<T, 1> {
   static void mul(T * dst, const T * x, const T * y) {
     dst[0] += x[0] * y[0];
     dst[1] += x[0] * y[1] + x[1] * y[0];
@@ -140,7 +140,7 @@ template <class T> struct ctaylor_rec<T, 1> {
   }
 };
 
-template <class T> struct ctaylor_rec<T, 2> {
+template <typename T> struct ctaylor_rec<T, 2> {
   static void mul(T * dst, const T * x, const T * y) {
     dst[0] += x[0] * y[0];
     dst[1] += x[0] * y[1] + x[1] * y[0];
@@ -176,7 +176,7 @@ template <class T> struct ctaylor_rec<T, 2> {
   }
 };
 
-template <class T, int Nvar> struct ctaylor {
+template <typename T, int Nvar> struct ctaylor {
   enum { size = POW2(Nvar) };
   T c[size];
 #ifdef CTAYLOR_SPARSE
@@ -334,9 +334,9 @@ template <class T, int Nvar> struct ctaylor {
       c[i] += t.c[i];
 #endif
   }
-  template <class S> void operator-=(const S & x) { c[0] -= x; }
-  template <class S> void operator+=(const S & x) { c[0] += x; }
-  template <class S> void operator*=(const S & scale) {
+  template <typename S> void operator-=(const S & x) { c[0] -= x; }
+  template <typename S> void operator+=(const S & x) { c[0] += x; }
+  template <typename S> void operator*=(const S & scale) {
 #ifdef CTAYLOR_SPARSE
     if (isscalar)
       c[0] *= scale;
@@ -348,7 +348,7 @@ template <class T, int Nvar> struct ctaylor {
       c[i] *= scale;
 #endif
   }
-  template <class S> void operator/=(const S & scale) {
+  template <typename S> void operator/=(const S & scale) {
 #ifdef CTAYLOR_SPARSE
     if (isscalar)
       c[0] /= scale;
@@ -381,7 +381,7 @@ template <class T, int Nvar> struct ctaylor {
   }
 };
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> operator*(const ctaylor<T, Nvar> & t1,
                                   const ctaylor<T, Nvar> & t2) {
   ctaylor<T, Nvar> tmp;
@@ -407,42 +407,42 @@ static ctaylor<T, Nvar> operator*(const ctaylor<T, Nvar> & t1,
 // <> comparisons are taken to mean comparing the constant
 // coefficient. This makes the transition from numbers to
 // taylor objects easier.
-template <class S, class T, int Nvar>
+template <typename S, typename T, int Nvar>
 static bool operator<(const S & x, const ctaylor<T, Nvar> & t) {
   return x < t.c[0];
 }
 
-template <class S, class T, int Nvar>
+template <typename S, typename T, int Nvar>
 static bool operator<(const ctaylor<T, Nvar> & t, const S & x) {
   return t.c[0] < x;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static bool operator<(const ctaylor<T, Nvar> & t1, const ctaylor<T, Nvar> & t2) {
   return t1.c[0] < t2.c[0];
 }
 
-template <class S, class T, int Nvar>
+template <typename S, typename T, int Nvar>
 static bool operator>(const S & x, const ctaylor<T, Nvar> & t) {
   return x > t.c[0];
 }
 
-template <class S, class T, int Nvar>
+template <typename S, typename T, int Nvar>
 static bool operator>(const ctaylor<T, Nvar> & t, const S & x) {
   return t.c[0] > x;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static bool operator>(const ctaylor<T, Nvar> & t1, const ctaylor<T, Nvar> & t2) {
   return t1.c[0] > t2.c[0];
 }
 
-template <class S, class T, int Nvar>
+template <typename S, typename T, int Nvar>
 static bool operator!=(const ctaylor<T, Nvar> & t, const S & x) {
   return t.c[0] != x;
 }
 
-template <class T, int Nvar, class S>
+template <typename T, int Nvar, typename S>
 static ctaylor<T, Nvar> operator*(const S & x, const ctaylor<T, Nvar> & t) {
   ctaylor<T, Nvar> tmp;
 #ifdef CTAYLOR_SPARSE
@@ -459,7 +459,7 @@ static ctaylor<T, Nvar> operator*(const S & x, const ctaylor<T, Nvar> & t) {
   return tmp;
 }
 
-template <class T, int Nvar, class S>
+template <typename T, int Nvar, typename S>
 static ctaylor<T, Nvar> operator*(const ctaylor<T, Nvar> & t, const S & x) {
   ctaylor<T, Nvar> tmp;
 #ifdef CTAYLOR_SPARSE
@@ -476,21 +476,21 @@ static ctaylor<T, Nvar> operator*(const ctaylor<T, Nvar> & t, const S & x) {
   return tmp;
 }
 
-template <class T, int Nvar, class S>
+template <typename T, int Nvar, typename S>
 static ctaylor<T, Nvar> operator+(const S & x, const ctaylor<T, Nvar> & t) {
   ctaylor<T, Nvar> tmp = t;
   tmp.c[0] += x;
   return tmp;
 }
 
-template <class T, int Nvar, class S>
+template <typename T, int Nvar, typename S>
 static ctaylor<T, Nvar> operator+(const ctaylor<T, Nvar> & t, const S & x) {
   ctaylor<T, Nvar> tmp = t;
   tmp.c[0] += x;
   return tmp;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> operator+(const ctaylor<T, Nvar> & t1,
                                   const ctaylor<T, Nvar> & t2) {
   ctaylor<T, Nvar> tmp = t1;
@@ -498,35 +498,35 @@ static ctaylor<T, Nvar> operator+(const ctaylor<T, Nvar> & t1,
   return tmp;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> operator-(const T & x, const ctaylor<T, Nvar> & t) {
   ctaylor<T, Nvar> tmp = -t;
   tmp.c[0] += x;
   return tmp;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> operator-(const ctaylor<T, Nvar> & t, const T & x) {
   ctaylor<T, Nvar> tmp = t;
   tmp.c[0] -= x;
   return tmp;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> operator-(int x, const ctaylor<T, Nvar> & t) {
   ctaylor<T, Nvar> tmp = -t;
   tmp.c[0] += x;
   return tmp;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> operator-(const ctaylor<T, Nvar> & t, int x) {
   ctaylor<T, Nvar> tmp = t;
   tmp.c[0] -= x;
   return tmp;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> operator-(const ctaylor<T, Nvar> & t1,
                                   const ctaylor<T, Nvar> & t2) {
   ctaylor<T, Nvar> tmp = t1;
@@ -540,7 +540,7 @@ static ctaylor<T, Nvar> operator-(const ctaylor<T, Nvar> & t1,
 
 #include <iostream>
 
-template <class num, int Nvar>
+template <typename num, int Nvar>
 static std::ostream & operator<<(std::ostream & stream,
                                  const ctaylor<num, Nvar> & t) {
   stream << "{" << t[0];

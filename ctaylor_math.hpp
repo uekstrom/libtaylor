@@ -29,7 +29,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 // For inclusion in ctaylor.h only!
 #include "tmath.hpp"
 
-template <class T, int Nvar, class S>
+template <typename T, int Nvar, typename S>
 static ctaylor<T, Nvar> operator/(const S & x, const ctaylor<T, Nvar> & t) {
   ctaylor<T, Nvar> res;
 #ifdef CTAYLOR_SPARSE
@@ -53,7 +53,7 @@ static ctaylor<T, Nvar> operator/(const S & x, const ctaylor<T, Nvar> & t) {
   return res;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> operator/(const ctaylor<T, Nvar> & t1,
                                   const ctaylor<T, Nvar> & t2) {
   ctaylor<T, Nvar> res;
@@ -71,21 +71,21 @@ static ctaylor<T, Nvar> operator/(const ctaylor<T, Nvar> & t1,
   return res;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> operator/(const ctaylor<T, Nvar> & t, const T & x) {
   ctaylor<T, Nvar> tmp = t;
   tmp *= 1 / x;
   return tmp;
 }
 
-template <class T, int Nvar, class S>
+template <typename T, int Nvar, typename S>
 static ctaylor<T, Nvar> operator/(const ctaylor<T, Nvar> & t, const S & x) {
   ctaylor<T, Nvar> tmp = t;
   tmp *= 1 / T(x);
   return tmp;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> abs(const ctaylor<T, Nvar> & t) {
   if (t.c[0] < 0)
     return -t;
@@ -93,7 +93,7 @@ static ctaylor<T, Nvar> abs(const ctaylor<T, Nvar> & t) {
     return t;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> exp(const ctaylor<T, Nvar> & t) {
 #ifdef CTAYLOR_SPARSE
   if (t.isscalar)
@@ -107,7 +107,7 @@ static ctaylor<T, Nvar> exp(const ctaylor<T, Nvar> & t) {
 }
 
 // exp(x)-1, but accurate for small x
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> expm1(const ctaylor<T, Nvar> & t) {
 #ifdef CTAYLOR_SPARSE
   if (t.isscalar)
@@ -127,7 +127,7 @@ static ctaylor<T, Nvar> expm1(const ctaylor<T, Nvar> & t) {
   return res;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> log(const ctaylor<T, Nvar> & t) {
 #ifdef CTAYLOR_SPARSE
   if (t.isscalar)
@@ -142,7 +142,7 @@ static ctaylor<T, Nvar> log(const ctaylor<T, Nvar> & t) {
 
 // We need this version with double a argument to prevent truncation
 // to int.
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> pow(const ctaylor<T, Nvar> & t, const double & a) {
 #ifdef CTAYLOR_SPARSE
   if (t.isscalar)
@@ -156,7 +156,7 @@ static ctaylor<T, Nvar> pow(const ctaylor<T, Nvar> & t, const double & a) {
   return res;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> sqrt(const ctaylor<T, Nvar> & t) {
 #ifdef CTAYLOR_SPARSE
   if (t.isscalar)
@@ -170,7 +170,7 @@ static ctaylor<T, Nvar> sqrt(const ctaylor<T, Nvar> & t) {
   return res;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> cbrt(const ctaylor<T, Nvar> & t) {
 #ifdef CTAYLOR_SPARSE
   if (t.isscalar)
@@ -188,7 +188,7 @@ static ctaylor<T, Nvar> cbrt(const ctaylor<T, Nvar> & t) {
 // This function gets priority over the normal pow
 // when the exponent is an integer, but does not force
 // conversion to integer.
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> pow(const ctaylor<T, Nvar> & t, int n) {
   if (n > 0) {
     ctaylor<T, Nvar> res = t;
@@ -203,7 +203,7 @@ static ctaylor<T, Nvar> pow(const ctaylor<T, Nvar> & t, int n) {
   }
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> atan(const ctaylor<T, Nvar> & t) {
 #ifdef CTAYLOR_SPARSE
   if (t.isscalar)
@@ -217,7 +217,7 @@ static ctaylor<T, Nvar> atan(const ctaylor<T, Nvar> & t) {
   return res;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> erf(const ctaylor<T, Nvar> & t) {
 #ifdef CTAYLOR_SPARSE
   if (t.isscalar)
@@ -231,7 +231,7 @@ static ctaylor<T, Nvar> erf(const ctaylor<T, Nvar> & t) {
   return res;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> sin(const ctaylor<T, Nvar> & t) {
 #ifdef CTAYLOR_SPARSE
   if (t.isscalar)
@@ -245,7 +245,7 @@ static ctaylor<T, Nvar> sin(const ctaylor<T, Nvar> & t) {
   return res;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> cos(const ctaylor<T, Nvar> & t) {
 #ifdef CTAYLOR_SPARSE
   if (t.isscalar)
@@ -259,7 +259,7 @@ static ctaylor<T, Nvar> cos(const ctaylor<T, Nvar> & t) {
   return res;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> asin(const ctaylor<T, Nvar> & t) {
   T tmp[Nvar + 1];
   asin_expand<T, Nvar>(tmp, t.c[0]);
@@ -269,7 +269,7 @@ static ctaylor<T, Nvar> asin(const ctaylor<T, Nvar> & t) {
   return res;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> acos(const ctaylor<T, Nvar> & t) {
   T tmp[Nvar + 1];
   acos_expand<T, Nvar>(tmp, t.c[0]);
@@ -279,7 +279,7 @@ static ctaylor<T, Nvar> acos(const ctaylor<T, Nvar> & t) {
   return res;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> asinh(const ctaylor<T, Nvar> & t) {
 #ifdef CTAYLOR_SPARSE
   if (t.isscalar)
@@ -298,7 +298,7 @@ static ctaylor<T, Nvar> asinh(const ctaylor<T, Nvar> & t) {
   the Boys function. Use an [8,8] Pade approximation when |t[0]| is
   small. This works less well but still ok in single precision.
  */
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> sqrtx_asinh_sqrtx(const ctaylor<T, Nvar> & t) {
   assert(t.c[0] > -0.5);
 #ifdef CTAYLOR_SPARSE
@@ -350,7 +350,7 @@ static ctaylor<T, Nvar> sqrtx_asinh_sqrtx(const ctaylor<T, Nvar> & t) {
   }
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> min(const ctaylor<T, Nvar> & a, const ctaylor<T, Nvar> & b) {
   if (a <= b)
     return a;
@@ -358,7 +358,7 @@ static ctaylor<T, Nvar> min(const ctaylor<T, Nvar> & a, const ctaylor<T, Nvar> &
     return b;
 }
 
-template <class T, int Nvar>
+template <typename T, int Nvar>
 static ctaylor<T, Nvar> max(const ctaylor<T, Nvar> & a, const ctaylor<T, Nvar> & b) {
   if (a > b)
     return a;

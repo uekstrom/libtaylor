@@ -37,7 +37,7 @@ static inline int taylorlen(int nvar, int ndeg) {
   return len;
 }
 
-template <class T, int Nvar, int Ndeg>
+template <typename T, int Nvar, int Ndeg>
 class taylor : public polymul::polynomial<T, Nvar, Ndeg> {
 public:
   typedef taylor<T, Nvar, Ndeg> type;
@@ -114,7 +114,7 @@ public:
   // series is no longer exact around the new "zero" point. For this
   // reason NdegOut may be choosen to be smaller than Ndeg.
   // TODO: implement for more variables, and without runtime polylen.
-  template <int NdegOut, class Tout>
+  template <int NdegOut, typename Tout>
   void shift(taylor<Tout, 1, NdegOut> & out, const Tout dx[Nvar]) const {
     assert(Nvar == 1);
     assert(NdegOut <= Ndeg);
@@ -141,13 +141,13 @@ public:
     for (int i = 0; i < size; i++)
       c[i] += t.c[i];
   }
-  template <class S> void operator-=(const S & x) { c[0] -= x; }
-  template <class S> void operator+=(const S & x) { c[0] += x; }
-  template <class S> void operator*=(const S & scale) {
+  template <typename S> void operator-=(const S & x) { c[0] -= x; }
+  template <typename S> void operator+=(const S & x) { c[0] += x; }
+  template <typename S> void operator*=(const S & scale) {
     for (int i = 0; i < size; i++)
       c[i] *= scale;
   }
-  template <class S> void operator/=(const S & scale) {
+  template <typename S> void operator/=(const S & scale) {
     for (int i = 0; i < size; i++)
       c[i] /= scale;
   }
@@ -212,21 +212,21 @@ public:
 
 // Define a taylor polynomial with taylor polynomial coefficients,
 // i.e. a tensoring of polynomial spaces.
-template <int Ndim, class T, int Nvar, int Ndeg> struct tensored_taylor {
+template <int Ndim, typename T, int Nvar, int Ndeg> struct tensored_taylor {
   typedef taylor<typename tensored_taylor<Ndim - 1, T, Nvar, Ndeg>::type, Nvar, Ndeg>
       type;
 };
 
-template <class T, int Nvar, int Ndeg> struct tensored_taylor<1, T, Nvar, Ndeg> {
+template <typename T, int Nvar, int Ndeg> struct tensored_taylor<1, T, Nvar, Ndeg> {
   typedef taylor<T, Nvar, Ndeg> type;
 };
 
-template <class T, int Nvar, int Ndeg>
+template <typename T, int Nvar, int Ndeg>
 static void as_taylor(taylor<T, Nvar, Ndeg> *& ptr, T * data) {
   ptr = reinterpret_cast<taylor<T, Nvar, Ndeg> *>(data);
 }
 
-template <class T, int Nvar, int Ndeg>
+template <typename T, int Nvar, int Ndeg>
 static void as_taylor(const taylor<T, Nvar, Ndeg> *& ptr, const T * data) {
   ptr = reinterpret_cast<const taylor<T, Nvar, Ndeg> *>(data);
 }
@@ -234,32 +234,32 @@ static void as_taylor(const taylor<T, Nvar, Ndeg> *& ptr, const T * data) {
 // <> comparisons are taken to mean comparing the constant
 // coefficient. This makes the transition from numbers to
 // taylor objects easier.
-template <class S, class T, int Nvar, int Ndeg>
+template <typename S, typename T, int Nvar, int Ndeg>
 static bool operator<(const S & x, const taylor<T, Nvar, Ndeg> & t) {
   return x < t[0];
 }
 
-template <class S, class T, int Nvar, int Ndeg>
+template <typename S, typename T, int Nvar, int Ndeg>
 static bool operator>(const S & x, const taylor<T, Nvar, Ndeg> & t) {
   return x > t[0];
 }
 
-template <class S, class T, int Nvar, int Ndeg>
+template <typename S, typename T, int Nvar, int Ndeg>
 static bool operator<(const taylor<T, Nvar, Ndeg> & t, const S & x) {
   return t[0] < x;
 }
 
-template <class S, class T, int Nvar, int Ndeg>
+template <typename S, typename T, int Nvar, int Ndeg>
 static bool operator>(const taylor<T, Nvar, Ndeg> & t, const S & x) {
   return t[0] > x;
 }
 
-template <class S, class T, int Nvar, int Ndeg>
+template <typename S, typename T, int Nvar, int Ndeg>
 static bool operator!=(const taylor<T, Nvar, Ndeg> & t, const S & x) {
   return t[0] != x;
 }
 
-template <class T, int Nvar, int Ndeg, class S>
+template <typename T, int Nvar, int Ndeg, typename S>
 static taylor<T, Nvar, Ndeg> operator*(const S & x,
                                        const taylor<T, Nvar, Ndeg> & t) {
   taylor<T, Nvar, Ndeg> tmp;
@@ -268,7 +268,7 @@ static taylor<T, Nvar, Ndeg> operator*(const S & x,
   return tmp;
 }
 
-template <class T, int Nvar, int Ndeg, class S>
+template <typename T, int Nvar, int Ndeg, typename S>
 static taylor<T, Nvar, Ndeg> operator*(const taylor<T, Nvar, Ndeg> & t,
                                        const S & x) {
   taylor<T, Nvar, Ndeg> tmp;
@@ -277,7 +277,7 @@ static taylor<T, Nvar, Ndeg> operator*(const taylor<T, Nvar, Ndeg> & t,
   return tmp;
 }
 
-template <class T, int Nvar, int Ndeg>
+template <typename T, int Nvar, int Ndeg>
 static taylor<T, Nvar, Ndeg> operator*(const taylor<T, Nvar, Ndeg> & t1,
                                        const taylor<T, Nvar, Ndeg> & t2) {
   taylor<T, Nvar, Ndeg> tmp;
@@ -285,7 +285,7 @@ static taylor<T, Nvar, Ndeg> operator*(const taylor<T, Nvar, Ndeg> & t1,
   return tmp;
 }
 
-template <class T, int Nvar, int Ndeg, class S>
+template <typename T, int Nvar, int Ndeg, typename S>
 static taylor<T, Nvar, Ndeg> operator+(const S & x,
                                        const taylor<T, Nvar, Ndeg> & t) {
   taylor<T, Nvar, Ndeg> tmp = t;
@@ -293,7 +293,7 @@ static taylor<T, Nvar, Ndeg> operator+(const S & x,
   return tmp;
 }
 
-template <class T, int Nvar, int Ndeg, class S>
+template <typename T, int Nvar, int Ndeg, typename S>
 static taylor<T, Nvar, Ndeg> operator+(const taylor<T, Nvar, Ndeg> & t,
                                        const S & x) {
   taylor<T, Nvar, Ndeg> tmp = t;
@@ -301,7 +301,7 @@ static taylor<T, Nvar, Ndeg> operator+(const taylor<T, Nvar, Ndeg> & t,
   return tmp;
 }
 
-template <class T, int Nvar, int Ndeg>
+template <typename T, int Nvar, int Ndeg>
 static taylor<T, Nvar, Ndeg> operator+(const taylor<T, Nvar, Ndeg> & t1,
                                        const taylor<T, Nvar, Ndeg> & t2) {
   taylor<T, Nvar, Ndeg> tmp;
@@ -310,7 +310,7 @@ static taylor<T, Nvar, Ndeg> operator+(const taylor<T, Nvar, Ndeg> & t1,
   return tmp;
 }
 
-template <class T, int Nvar, int Ndeg, class S>
+template <typename T, int Nvar, int Ndeg, typename S>
 static taylor<T, Nvar, Ndeg> operator-(const S & x,
                                        const taylor<T, Nvar, Ndeg> & t) {
   taylor<T, Nvar, Ndeg> tmp = -t;
@@ -318,7 +318,7 @@ static taylor<T, Nvar, Ndeg> operator-(const S & x,
   return tmp;
 }
 
-template <class T, int Nvar, int Ndeg, class S>
+template <typename T, int Nvar, int Ndeg, typename S>
 static taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar, Ndeg> & t,
                                        const S & x) {
   taylor<T, Nvar, Ndeg> tmp = t;
@@ -327,7 +327,7 @@ static taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar, Ndeg> & t,
 }
 
 /*
-template<class T, int Nvar, int Ndeg>
+template <typename T, int Nvar, int Ndeg>
 static taylor<T, Nvar, Ndeg> operator-(int x, const taylor<T, Nvar,Ndeg>& t)
 {
   taylor<T, Nvar,Ndeg> tmp = -t;
@@ -335,7 +335,7 @@ static taylor<T, Nvar, Ndeg> operator-(int x, const taylor<T, Nvar,Ndeg>& t)
   return tmp;
 }
 
-template<class T, int Nvar, int Ndeg>
+template <typename T, int Nvar, int Ndeg>
 static taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t, int x)
 {
   taylor<T, Nvar,Ndeg> tmp = t;
@@ -344,7 +344,7 @@ static taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t, int x)
 }
 */
 
-template <class T, int Nvar, int Ndeg>
+template <typename T, int Nvar, int Ndeg>
 static taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar, Ndeg> & t1,
                                        const taylor<T, Nvar, Ndeg> & t2) {
   taylor<T, Nvar, Ndeg> tmp;
@@ -359,7 +359,7 @@ static taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar, Ndeg> & t1,
 
 #include <iostream>
 
-template <class num, int Nvar, int Ndeg>
+template <typename num, int Nvar, int Ndeg>
 static std::ostream & operator<<(std::ostream & stream,
                                  const taylor<num, Nvar, Ndeg> & t) {
   stream << "{" << t[0];
@@ -372,7 +372,7 @@ static std::ostream & operator<<(std::ostream & stream,
 #else
 
 #include <stdio.h>
-template <class num, int Nvar, int Ndeg>
+template <typename num, int Nvar, int Ndeg>
 void print_taylor(FILE * dst, const taylor<num, Nvar, Ndeg> & t) {
   fprintf(dst, "{%.10e", t[0]);
   for (int i = 1; i < t.size; i++)

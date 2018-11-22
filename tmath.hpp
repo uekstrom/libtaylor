@@ -56,7 +56,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 // Taylor math, template style
 // N is always the order of the polynomial
 
-template <class T, int N> struct tfuns {
+template <typename T, int N> struct tfuns {
   static void mul(T * z, const T * x, const T * y) {
     for (int i = 0; i <= N; i++) {
       z[i] = x[0] * y[i];
@@ -144,7 +144,7 @@ template <class T, int N> struct tfuns {
 };
 
 // Taylor series of 1/(a+x)
-template <class T, int N> static void inv_expand(T * t, const T & a) {
+template <typename T, int N> static void inv_expand(T * t, const T & a) {
   assert(a != 0 && "1/(a+x) not analytic at a = 0");
   t[0] = 1 / a;
   for (int i = 1; i <= N; i++)
@@ -152,7 +152,7 @@ template <class T, int N> static void inv_expand(T * t, const T & a) {
 }
 
 // Evaluate the taylor series of exp(x0+x)=exp(x0)*exp(x)
-template <class T, int Ndeg> static void exp_expand(T * t, const T & x0) {
+template <typename T, int Ndeg> static void exp_expand(T * t, const T & x0) {
   T ifac = 1;
   t[0] = exp(x0);
   for (int i = 1; i <= Ndeg; i++) {
@@ -162,7 +162,7 @@ template <class T, int Ndeg> static void exp_expand(T * t, const T & x0) {
 }
 
 // Log series log(a+x) = log(1+x/a) + log(a)
-template <class T, int N> static void log_expand(T * t, const T & x0) {
+template <typename T, int N> static void log_expand(T * t, const T & x0) {
   assert(x0 > 0 && "log(x) not real analytic at x <= 0");
   t[0] = log(x0);
   T x0inv = 1 / x0;
@@ -174,7 +174,7 @@ template <class T, int N> static void log_expand(T * t, const T & x0) {
 }
 
 /* Use that (x0+x)^a=x0^a*(1+x/x0)^a */
-template <class T, int N> static void pow_expand(T * t, T x0, T a) {
+template <typename T, int N> static void pow_expand(T * t, T x0, T a) {
   if (x0 <= 0)
     assert(x0 > 0 && "pow(x,a) not real analytic at x <= 0");
   t[0] = pow(x0, a);
@@ -184,7 +184,7 @@ template <class T, int N> static void pow_expand(T * t, T x0, T a) {
 }
 
 /* Use that (x0+x)^a=x0^a*(1+x/x0)^a */
-template <class T, int N> static void sqrt_expand(T * t, const T & x0) {
+template <typename T, int N> static void sqrt_expand(T * t, const T & x0) {
   assert(x0 > 0 && "sqrt(x) not real analytic at x <= 0");
   t[0] = sqrt(x0);
   T x0inv = 1 / x0;
@@ -192,7 +192,7 @@ template <class T, int N> static void sqrt_expand(T * t, const T & x0) {
     t[i] = t[i - 1] * ((3 * x0inv) / (2 * i) - x0inv);
 }
 
-template <class T, int N> static void cbrt_expand(T * t, const T & x0) {
+template <typename T, int N> static void cbrt_expand(T * t, const T & x0) {
   assert(x0 > 0 && "pow(x,a) not real analytic at x <= 0");
   t[0] = cbrt(x0);
   T x0inv = 1 / x0;
@@ -202,7 +202,7 @@ template <class T, int N> static void cbrt_expand(T * t, const T & x0) {
 
 // Use that d/dx atan(x) = 1/(1 + x^2),
 // Taylor expand in x^2 and integrate.
-template <class T, int Ndeg> static void atan_expand(T * t, T a) {
+template <typename T, int Ndeg> static void atan_expand(T * t, T a) {
   // Calculate taylor expansion of 1/(1+a^2+x)
   T x[Ndeg + 1];
   inv_expand<T, Ndeg>(t, 1 + a * a);
@@ -225,7 +225,7 @@ template <class T, int Ndeg> static void atan_expand(T * t, T a) {
    exp(-a^2-2a*x)*exp(-x^2)
    Just doing a composition is unstable near 0.
  */
-template <class T, int Ndeg> static void gauss_expand(T * t, const T & a) {
+template <typename T, int Ndeg> static void gauss_expand(T * t, const T & a) {
   exp_expand<T, Ndeg>(t, -a * a);
   tfuns<T, Ndeg>::stretch(t, -2 * a);
   T g[Ndeg + 1];
@@ -239,7 +239,7 @@ template <class T, int Ndeg> static void gauss_expand(T * t, const T & a) {
 
 // Use that d/dx erf(x) = 2/sqrt(pi)*exp(-x^2),
 // Taylor expand in x^2 and integrate.
-template <class T, int Ndeg> static void erf_expand(T * t, const T & a) {
+template <typename T, int Ndeg> static void erf_expand(T * t, const T & a) {
   gauss_expand<T, Ndeg>(t, a);
   for (int i = 0; i <= Ndeg; i++)
     t[i] *= 2 / sqrt(M_PI);
@@ -247,7 +247,7 @@ template <class T, int Ndeg> static void erf_expand(T * t, const T & a) {
   t[0] = erf(a);
 }
 
-template <class T, int Ndeg> static void sin_expand(T * t, const T & a) {
+template <typename T, int Ndeg> static void sin_expand(T * t, const T & a) {
   if (Ndeg > 0) {
     T s = sin(a), c = cos(a), fac = 1;
     for (int i = 0; 2 * i < Ndeg; i++) {
@@ -263,7 +263,7 @@ template <class T, int Ndeg> static void sin_expand(T * t, const T & a) {
   }
 }
 
-template <class T, int Ndeg> static void cos_expand(T * t, const T & a) {
+template <typename T, int Ndeg> static void cos_expand(T * t, const T & a) {
   if (Ndeg > 0) {
     T s = sin(a), c = cos(a), fac = 1;
     for (int i = 0; 2 * i < Ndeg; i++) {
@@ -281,7 +281,7 @@ template <class T, int Ndeg> static void cos_expand(T * t, const T & a) {
 
 // hyperbolic arcsin function. d/dx asinh(x) = 1/sqrt(1+x^2)
 // 1 + (a+x)^2 = 1+a^2 + 2ax + x^2
-template <class T, int Ndeg> static void asinh_expand(T * t, const T & a) {
+template <typename T, int Ndeg> static void asinh_expand(T * t, const T & a) {
   T tmp[Ndeg + 1];
   tmp[0] = 1 + a * a;
   if (Ndeg > 0)
@@ -298,7 +298,7 @@ template <class T, int Ndeg> static void asinh_expand(T * t, const T & a) {
 
 // arcsin function. d/dx asin(x) = 1/sqrt(1-x^2)
 // 1 - (a+x)^2 = 1-a^2 - 2ax - x^2
-template <class T, int Ndeg> static void asin_expand(T * t, const T & a) {
+template <typename T, int Ndeg> static void asin_expand(T * t, const T & a) {
   T tmp[Ndeg + 1];
   tmp[0] = 1 - a * a;
   if (Ndeg > 0)
@@ -313,13 +313,13 @@ template <class T, int Ndeg> static void asin_expand(T * t, const T & a) {
   t[0] = asinh(a);
 }
 
-template <class T, int Ndeg> static void acosh_expand(T * t, const T & a) {
+template <typename T, int Ndeg> static void acosh_expand(T * t, const T & a) {
   asinh_expand(t, a);
   for (int i = 0; i < Ndeg + 1; i++)
     t[i] *= -1;
 }
 
-template <class T, int Ndeg> static void acos_expand(T * t, const T & a) {
+template <typename T, int Ndeg> static void acos_expand(T * t, const T & a) {
   T tmp[Ndeg + 1];
   tmp[0] = 1 - a * a;
   if (Ndeg > 0)
