@@ -54,7 +54,7 @@ OTHER DEALINGS IN THE SOFTWARE.
   1 x y xy z zx zy zxy
  */
 
-#define POW2(N) (1 << (N))
+constexpr POW2(int N) noexcept { return (1 << N); }
 
 /*
   Recursion on the ctaylor data.
