@@ -261,7 +261,9 @@ struct deriv_fac_multiplier
 template<class numtype, int Nvar, int term>
   struct deriv_fac_multiplier<numtype,Nvar,term,term>
 {
-  static void mul_fac(numtype c[]) {c[term] *= deriv_fac<Nvar,term>::fac;}
+  // static_cast<int> required because boost::multiprecision overloads
+  // multiplying by int's, but not enum's.
+  static void mul_fac(numtype c[]) {c[term] *= static_cast<int>(deriv_fac<Nvar,term>::fac);}
 };
 
 
