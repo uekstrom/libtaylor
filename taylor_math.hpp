@@ -23,8 +23,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef TAYLOR_MATH_H
-#define TAYLOR_MATH_H
+#pragma once
 
 // By Ulf Ekstrom March-June 2009.
 // Elementary functions. For inclusion in taylor.hpp only!
@@ -583,5 +582,3 @@ static taylor<T, Nvar, Ndeg> max(const taylor<T, Nvar, Ndeg> & a,
   else
     return b;
 }
-
-#endif // TAYLOR_MATH_H

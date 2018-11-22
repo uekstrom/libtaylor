@@ -23,8 +23,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef TMATH_H
-#define TMATH_H
+#pragma once
 
 /*
   Taylor expansions of the intrinsic functions
@@ -335,5 +334,3 @@ template <typename T, int Ndeg> static void acos_expand(T * t, const T & a) {
     t[i] *= -1;
   t[0] = asinh(a);
 }
-
-#endif

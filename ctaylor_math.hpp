@@ -23,8 +23,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef CTAYLOR_MATH_H
-#define CTAYLOR_MATH_H
+#pragma once
 
 // For inclusion in ctaylor.h only!
 #include "tmath.hpp"
@@ -365,5 +364,3 @@ static ctaylor<T, Nvar> max(const ctaylor<T, Nvar> & a, const ctaylor<T, Nvar> &
   else
     return b;
 }
-
-#endif // CTAYLOR_MATH_H

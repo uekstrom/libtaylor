@@ -23,10 +23,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef TAYLOR_H
-#define TAYLOR_H
-#include "polymul.hpp"
+#pragma once
+
 #include <cmath>
+
+#include "polymul.hpp"
 
 static inline int taylorlen(int nvar, int ndeg) {
   int len = 1;
@@ -40,7 +41,7 @@ static inline int taylorlen(int nvar, int ndeg) {
 template <typename T, int Nvar, int Ndeg>
 class taylor : public polymul::polynomial<T, Nvar, Ndeg> {
 public:
-  typedef taylor<T, Nvar, Ndeg> type;
+  using type = taylor<T, Nvar, Ndeg>;
   using polymul::polynomial<T, Nvar, Ndeg>::size;
   using polymul::polynomial<T, Nvar, Ndeg>::c;
 
@@ -213,12 +214,11 @@ public:
 // Define a taylor polynomial with taylor polynomial coefficients,
 // i.e. a tensoring of polynomial spaces.
 template <int Ndim, typename T, int Nvar, int Ndeg> struct tensored_taylor {
-  typedef taylor<typename tensored_taylor<Ndim - 1, T, Nvar, Ndeg>::type, Nvar, Ndeg>
-      type;
+  using type = taylor<typename tensored_taylor<Ndim - 1, T, Nvar, Ndeg>::type, Nvar, Ndeg>;
 };
 
 template <typename T, int Nvar, int Ndeg> struct tensored_taylor<1, T, Nvar, Ndeg> {
-  typedef taylor<T, Nvar, Ndeg> type;
+  using type = taylor<T, Nvar, Ndeg>;
 };
 
 template <typename T, int Nvar, int Ndeg>
@@ -379,6 +379,4 @@ void print_taylor(FILE * dst, const taylor<num, Nvar, Ndeg> & t) {
     fprintf(dst, ", %.10e", t[i]);
   fprintf(dst, "}");
 }
-#endif
-
 #endif

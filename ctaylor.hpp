@@ -23,8 +23,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef CTAYLOR_H
-#define CTAYLOR_H
+#pragma once
+
 #include <cassert>
 #include <cmath>
 #include <cstdio>
@@ -549,7 +549,5 @@ static std::ostream & operator<<(std::ostream & stream,
   stream << "}";
   return stream;
 }
-
-#endif
 
 #endif

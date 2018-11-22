@@ -23,8 +23,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MICROMATH_H
-#define MICROMATH_H
+#pragma once
 
 /*
   Math functions for the truly unbelivably bad Visual C++,
@@ -107,5 +106,3 @@ inline double erfc(double x)
   } while (fabs(q1 - q2) / q2 > erf_rel_error);
   return one_sqrtpi * exp(-x * x) * q2;
 }
-
-#endif // MICROMATH_H
