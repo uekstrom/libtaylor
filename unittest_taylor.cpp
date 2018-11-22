@@ -37,6 +37,8 @@ using namespace std;
 #include "taylor.hpp"
 typedef double num_t;
 
+using namespace polymul;
+
 // Some taylor coefficients around x = 2.5, calculated using
 // Maxima bfloat(taylor(...))
 const num_t exp_good[] = {1.218249396070347e1,
@@ -80,7 +82,19 @@ const num_t composed_good[] = { 1.49182469764127,
 				 4.812029744711682, //xy
 				 5.614034702163628}; //y^2
 
-#define NR_COEFF_CHECK 6
+template<class num, int Nvar, int Ndeg>
+void printpoly(ostream &dst, const polynomial<num,Nvar,Ndeg> &p)
+{
+  int exps[Nvar] = {0};
+  for (int i=0;i<p.size;i++)
+  {
+    p.exponents(i,exps);
+    for (int j=0;j<Nvar;j++)
+      cout << exps[j] << " ";
+    cout << " " << p[i] << endl;
+    assert(i == p.term_index(exps));
+  }
+}
 
 /// Macro and helper functions to be used to signal error conditions
 #define TAYLOR_ERROR(msg)                           \
@@ -114,6 +128,8 @@ void message_and_die(const std::string & err,
   std::exit(EXIT_FAILURE);
 }
 
+#define NR_COEFF_CHECK 6
+
 template<class T, int Nvar, int Ndeg>
 int taylor_check(const char *label,
 		 const taylor<T,Nvar,Ndeg>& t,
@@ -137,6 +153,12 @@ int taylor_check(const char *label,
 	}
     }
   return nfail;
+}
+
+template<class T>
+T error_measure(const T &x1, const T &x2)
+{
+  return 2*fabs(x1 - x2)/(1 + 0.5*fabs(x1+x2));
 }
 
 template<class T, int Nvar, int Ndeg>
@@ -315,14 +337,56 @@ int main(void)
   num_t dx = 1e-3;
   shift_sint.shift(shifted,&dx);
   res += taylor_compare(sint,shifted,1e-15);
-
-/*
-  // sinc
+  // Tensoring.
+  // Test with a normal taylor series that completely contains
+  // the tensor terms.
+  tensored_taylor<3,double,1,2>::type tens_t = 0, tens_res;
+  taylor<double,3,6> tens_cover = 0, tens_cover_out;
+  for (int i=0;i<3;i++)
+    for (int j=0;j<3;j++)
+      for (int k=0;k<3;k++)
+      {
+        tens_t[i][j][k] = 1 + i + 13*j + 23*k;
+        int ijk[3] = {i,j,k};
+        tens_cover[tens_cover.term_index(ijk)] = tens_t[i][j][k];
+      }
+  tens_res = 2*exp(1/log(tens_t+1))+atan(tens_t);
+  tens_cover_out = 2*exp(1/log(tens_cover+1))+atan(tens_cover);
+  for (int i=0;i<3;i++)
+    for (int j=0;j<3;j++)
+      for (int k=0;k<3;k++)
+      {
+        int ijk[3] = {i,j,k};
+        if (error_measure(tens_res[i][j][k],tens_cover_out[tens_cover_out.term_index(ijk)])>1e-14)
+        {
+          std::ostringstream message;
+          message << std::string("tensoring error: ")
+                  << tens_res[i][j][k]
+                  << std::string(" vs ")
+                  << tens_cover_out[tens_cover_out.term_index(ijk)];
+          res++;
+        }
+      }
+  // acos
   cout << scientific;
   cout.precision(16);
-  taylor<num_t,1,6> sincx(1e-4,0), sincout = sinc(sincx);
-  for (int i=0;i<sincout.size;i++)
-      cout << i << " " << sincout[i] << endl;
-*/
+  taylor<num_t,1,6> acosx(1e-4,0), acosout = acos(acosx);
+  for (int i=0;i<acosout.size;i++)
+    cout << i << std::string(" ") << acosout[i] << endl;
+
+  // Test fast functions
+  taylor<double,2,12> xin(2,0),yin(1,1),tslow,tfast;
+  xin = xin + 3*pow(xin,2)+2*yin+pow(yin,3);
+  tslow = 1/xin;
+  taylor_reciprocal(tfast,xin);
+  if (taylor_compare(tfast,tslow,1e-16))
+  {
+    std::ostringstream message;
+    message << std::string("Fast reciprocal error.\n")
+            << std::string("tslow: ") << tslow
+            << std::string("tfast: ") << tfast;
+    res++;
+  }
+
   return res;
 }

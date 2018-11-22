@@ -9,5 +9,6 @@ enable_testing()
 add_test(Taylor ${CMAKE_BINARY_DIR}/bin/unittest_taylor)
 
 install(FILES micromath.hpp polymul.hpp taylor.hpp taylor_math.hpp
+              ctaylor.hpp ctaylor_math.hpp tmath.hpp
 	      DESTINATION include
 	      )
