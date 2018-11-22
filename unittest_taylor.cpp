@@ -35,7 +35,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 using namespace std;
 
 #include "taylor.hpp"
-typedef double num_t;
+using num_t = double;
 
 using namespace polymul;
 
@@ -186,12 +186,12 @@ long stupid_binomial(int n, int k) {
     return fac(n) / (fac(k) * fac(n - k));
 }
 
-template <class T, int N> taylor<T, 2, N> binomial_generating_function(void) {
+template <class T, int N> taylor<T, 2, N> binomial_generating_function() {
   taylor<T, 2, N> x(0, 0), y(0, 1);
   return 1 / (1 - (1 + x) * y); // generating function for the binomial coefficients
 }
 
-int main(void) {
+int main() {
   num_t x0 = 2.5;
   num_t x1 = 0.3;
   taylor<num_t, 1, 6> tin(x0, 0);

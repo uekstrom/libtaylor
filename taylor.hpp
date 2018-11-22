@@ -44,7 +44,7 @@ public:
   using polymul::polynomial<T, Nvar, Ndeg>::size;
   using polymul::polynomial<T, Nvar, Ndeg>::c;
 
-  taylor() {}
+  taylor() = default;
   // This does not work when T is a int. One ugly solution is to
   // specialize taylor for int T's, but perhaps not so useful?
   template <typename S>
@@ -72,12 +72,12 @@ public:
     polymul::polynomial<T, Nvar, Ndeg>::operator=(T(c0));
     return *this;
   }
-  template <int N> taylor<T, Nvar - 1, N> & pick_order(void) {
+  template <int N> taylor<T, Nvar - 1, N> & pick_order() {
     assert(N <= Ndeg);
     return *reinterpret_cast<taylor<T, Nvar - 1, N> *>(
         c + polymul_internal::polylen<Nvar, N - 1>::len);
   }
-  template <int N> const taylor<T, Nvar - 1, N> & pick_order(void) const {
+  template <int N> const taylor<T, Nvar - 1, N> & pick_order() const {
     assert(N <= Ndeg);
     return *reinterpret_cast<const taylor<T, Nvar - 1, N> *>(
         c + polymul_internal::polylen<Nvar, N - 1>::len);
@@ -89,8 +89,8 @@ public:
 
   // Multiply each term with the correct factorials to get
   // derivatives, i.e. x^2y^3 is multiplied by 2!3!
-  void deriv_facs(void) { polymul::polydfac(*this); }
-  void integrate(void) {
+  void deriv_facs() { polymul::polydfac(*this); }
+  void integrate() {
     assert(Nvar == 1 && "Implement this..");
     for (int i = Ndeg; i > 0; i--)
       c[i] = c[i - 1] / i;
@@ -106,7 +106,7 @@ public:
       an *= alpha;
     }
   }
-  void invert_parity(void) {
+  void invert_parity() {
     this->stretch(-1); // TODO: optimized version of stretch(-1)
   }
   // Calculate a shifted version of this taylor expansion of one
@@ -127,7 +127,7 @@ public:
       for (int j = i; j <= Ndeg; j++)
         out[i] += taylorlen(j - i, i) * dxpow[j - i] * (*this)[j];
   }
-  taylor<T, Nvar, Ndeg> operator-(void) const {
+  taylor<T, Nvar, Ndeg> operator-() const {
     taylor<T, Nvar, Ndeg> res = *this;
     for (int i = 0; i < res.size; i++)
       res[i] *= -1;

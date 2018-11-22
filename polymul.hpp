@@ -1138,7 +1138,7 @@ inline int polylen(int nvar, int ndeg) {
 template <class numtype, int Nvar, int Ndeg> class polynomial {
 public:
   enum { size = polymul_internal::polylen<Nvar, Ndeg>::len };
-  polynomial() {}
+  polynomial() = default;
   explicit polynomial(const numtype & c0) {
     c[0] = c0;
     for (int i = 1; i < size; i++)
@@ -1234,12 +1234,12 @@ public:
       polynomial<numtype, Nvar, Ndeg>::next_exponents(Nvar, exponents);
     }
   }
-  template <int N> polynomial<numtype, Nvar - 1, N> & pick_order(void) {
+  template <int N> polynomial<numtype, Nvar - 1, N> & pick_order() {
     assert(N <= Ndeg);
     return *reinterpret_cast<polynomial<numtype, Nvar - 1, N> *>(
         c + polymul_internal::polylen<Nvar, N - 1>::len);
   }
-  template <int N> const polynomial<numtype, Nvar - 1, N> & pick_order(void) const {
+  template <int N> const polynomial<numtype, Nvar - 1, N> & pick_order() const {
     assert(N <= Ndeg);
     return *reinterpret_cast<const polynomial<numtype, Nvar - 1, N> *>(
         c + polymul_internal::polylen<Nvar, N - 1>::len);
