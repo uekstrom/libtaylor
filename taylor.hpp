@@ -47,11 +47,11 @@ public:
   using polymul::polynomial<T, Nvar, Ndeg>::size;
   using polymul::polynomial<T, Nvar, Ndeg>::c;
 
-  taylor(void) {}
+  taylor() {}
   // This does not work when T is a int. One ugly solution is to
   // specialize taylor for int T's, but perhaps not so useful?
   template<typename S>
-  taylor(const S &c0) : polymul::polynomial<T, Nvar,Ndeg>(T(c0)) {}
+  explicit taylor(const S &c0) : polymul::polynomial<T, Nvar,Ndeg>(T(c0)) {}
   //  taylor(double c0) : polynomial<T, Nvar,Ndeg>(T(c0)) {}
   //  taylor(const T &c0) : polynomial<T, Nvar,Ndeg>(c0) {}
   // Set the constant term to c0 and the first order term of

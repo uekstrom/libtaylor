@@ -64,20 +64,16 @@
 namespace polymul_internal
 {
 
-  constexpr int factorial(int i) {
-    return (i > 1) ? i * factorial(i - 1) : 1;
-  }
+constexpr int factorial(int i) { return (i > 1) ? i * factorial(i - 1) : 1; }
 
-  constexpr int binomial(int n, int k) {
-    return (
-            (n == k) ? 1 : (n == 0) ? ((k > 0) ? 1 : 0) : (k==0) ? ((n > 0) ? 1 : 0) : binomial(n-1, k-1) + binomial(n-1, k)
-            );
-  }
+constexpr int binomial(int n, int k) noexcept {
+  return ((n == k || k == 0)
+              ? 1
+              : (n == 0) ? 0 : binomial(n - 1, k - 1) + binomial(n - 1, k));
+}
 
-  template <int Nvar, int Ndeg>
-  struct polylen
-  {
-    enum { len = binomial(Nvar+Ndeg,Ndeg) };
+template <int Nvar, int Ndeg> struct polylen {
+  enum { len = binomial(Nvar + Ndeg, Ndeg) };
   };
 
   // Term <-> degree
@@ -767,7 +763,7 @@ namespace polymul_internal
     static vartype eval(const numtype p[], const vartype x[])
     {
       // Horner scheme:
-      vartype sum = p[Ndeg];
+      vartype sum(p[Ndeg]);
       for (int i=Ndeg-1;i>=0;i--)
         sum = sum*x[0] + p[i];
       return sum;
@@ -1022,7 +1018,7 @@ namespace polymul_internal
       polymul_internal::polynomial_multiplier<numtype,Nvar_dst-1,Ndeg-1,1>
         ::mul_set(tmp+polylen<Nvar_dst,Ndeg-1>::len,
                   tmp+polylen<Nvar_dst,Ndeg-2>::len,
-                  T+J*Nvar_dst);
+                T+J*Nvar_dst);
       if (J == 0)
         for (int i=polylen<Nvar_dst,Ndeg-1>::len;i<polylen<Nvar_dst,Ndeg>::len;i++)
           dst[i] = src[term]*tmp[i];
@@ -1197,8 +1193,8 @@ namespace polymul
   {
   public:
     enum { size = polymul_internal::polylen<Nvar,Ndeg>::len };
-    polynomial(void) {}
-    polynomial(const numtype &c0)
+    polynomial() {}
+    explicit polynomial(const numtype &c0)
     {
       c[0] = c0;
       for (int i=1;i<size;i++)
@@ -1411,7 +1407,7 @@ namespace polymul
       for (int i=polynomial<numtype,Nvar,Ndeg-1>::size;i<size;i++)
         dp.c[i] = 0;
     }
-    numtype c[size];
+    numtype c[size] = {};
   };
 
 
