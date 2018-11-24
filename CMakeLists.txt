@@ -19,18 +19,11 @@ endif()
 set(INSTALL_CMAKEDIR ${DEF_INSTALL_CMAKEDIR} CACHE PATH "Installation directory for CMake files")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 
-add_executable(unittest_taylor ${CMAKE_CURRENT_SOURCE_DIR}/unittest_taylor.cpp)
-target_include_directories(unittest_taylor
-  PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-  )
-
 enable_testing()
 
-add_test(
-  NAME Taylor
-  COMMAND $<TARGET_FILE:unittest_taylor>
-  )
+add_subdirectory(tests)
+
+# <<< Create a target >>> Install and export targets >>>
 
 add_library(taylor INTERFACE)
 target_include_directories(taylor
@@ -38,7 +31,7 @@ target_include_directories(taylor
     $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
   )
 
-# <<< Install and export targets >>>
+# <<< Install header files >>>
 
 install(
   FILES
@@ -52,6 +45,8 @@ install(
   DESTINATION
     ${INSTALL_INCLUDEDIR}/taylor
   )
+
+# <<< Export and install target >>>
 
 install(
   TARGETS
