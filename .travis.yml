@@ -1,51 +1,101 @@
 language: cpp
 sudo: false
+dist: trusty
+
 matrix:
+  fast_finish: true
   include:
+    # 1/ Linux Clang builds
     - os: linux
-      compiler: gcc
-      addons:
+      addons: &clang34
         apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - george-edison55-precise-backports
           packages:
-            - cmake
-            - cmake-data
-            - g++-4.6
-            - gcc-4.6
-      env:
-        - CXX_COMPILER='g++-4.6'
-    - os: osx
-      osx_image: xcode7.3
-      compiler: gcc
-      env:
-        - CXX_COMPILER='g++-4.8'
-        - HOMEBREW_GCC='homebrew/versions/gcc48'
-    - os: linux
-      compiler: clang
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-precise-3.5
-            - ubuntu-toolchain-r-test
-            - george-edison55-precise-backports
-          packages:
-            - cmake
-            - cmake-data
-            - clang-3.5
-      env:
-        - CXX_COMPILER='clang++-3.5'
-    - os: osx
-      osx_image: xcode7.3
-      compiler: clang
+            - clang
+            - cmake3
       env:
         - CXX_COMPILER='clang++'
+    - os: linux
+      addons: &clang35
+        apt:
+          packages:
+            - clang-3.5
+            - cmake3
+      env:
+        - CXX_COMPILER='clang++-3.5'
+    - os: linux
+      addons: &clang38
+        apt:
+          packages:
+            - clang-3.8
+            - cmake3
+      env:
+        - CXX_COMPILER='clang++-3.8'
+    # 2/ Linux GCC Builds
+    - os: linux
+      addons: &gcc49
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - cmake3
+            - g++-4.9
+      env:
+        - CXX_COMPILER='g++-4.9'
+    - os: linux
+      addons: &gcc5
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - cmake3
+            - g++-5
+      env:
+        - CXX_COMPILER='g++-5'
+    - os: linux
+      addons: &gcc6
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - cmake3
+            - g++-6
+      env:
+        - CXX_COMPILER='g++-6'
+    - os: linux
+      addons: &gcc7
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - cmake3
+            - g++-7
+      env:
+        - CXX_COMPILER='g++-7'
+    # 3/ OSX Clang Builds
+    - os: osx
+      env:
+        - CXX_COMPILER='clang++'
+    # 4/ OSX GCC Builds
+    - os: osx
+      env:
+        - CXX_COMPILER='g++'
+
+before_install:
+  - test -n $CC && unset CC
+  - test -n $CXX && unset CXX
+  - test -n $FC && unset FC
+
 install:
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
   - |
     if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-      brew reinstall ${HOMEBREW_GCC}
+      brew update &> /dev/null
+      brew cask uninstall --force oclint
+      brew upgrade cmake
+      brew install gcc
     fi
+
 before_script:
   - cmake --version
   - cd ${TRAVIS_BUILD_DIR}
@@ -55,5 +105,21 @@ before_script:
   - cd build
   - cmake ..
   - cmake --build . --target install -- VERBOSE=1
+
 script:
   - ctest --output-on-failure --verbose
+
+
+before_script:
+  - cd ${TRAVIS_BUILD_DIR}
+  - >
+     cmake -Bbuild -H.
+     -DCMAKE_CXX_COMPILER=${CXX_COMPILER}
+     -DCMAKE_INSTALL_PREFIX=$HOME/Software/taylor
+
+script:
+  # Build and install
+  - cmake --build build --target install -- --jobs=2 VERBOSE=1
+  - cd build
+  # Test
+  - ctest --output-on-failure --verbose --parallel 2

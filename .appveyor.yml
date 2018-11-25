@@ -1,13 +1,4 @@
-# See http://msdn.microsoft.com/en-us/library/ms164311.aspx for
-# command-line options to MSBuild.
-
-# Speeding up a Visual Studio build.
-# http://blogs.msdn.com/b/vcblog/archive/2011/01/05/damn-my-vc-project-is-building-slower-in-vs2010-what-do-i-do-now-a-step-by-step-guide.aspx
 version: 'build_{build}-{branch}'
-
-os:
-  - Windows Server 2012 R2
-  - Visual Studio 2015
 
 platform: x86
 
@@ -15,30 +6,34 @@ build:
   parallel: true
 
 environment:
+  SHELL: "windows"
   matrix:
-    - GENERATOR: "Visual Studio 14 2015"
-      BUILDFLAGS: "/verbosity:detailed"
-    - GENERATOR: "MinGW Makefiles"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      GENERATOR: "MinGW Makefiles"
       BUILDFLAGS: "VERBOSE=1"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      GENERATOR: "Visual Studio 14 2015"
+      BUILDFLAGS: "/verbosity:normal"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GENERATOR: "Visual Studio 15 2017"
+      BUILDFLAGS: "/verbosity:normal"
 
 init:
-  - cmd: cmake --version
-
-before_build:
   # Workaround for CMake not wanting sh.exe on PATH for MinGW
   - set PATH=%PATH:C:\Program Files (x86)\Git\bin;=%
   - set PATH=%PATH:C:\Program Files\Git\usr\bin;=%
-  - set PATH=C:\MinGW\bin;%PATH%
+  - ps: >-
+      if (($env:GENERATOR -eq "MinGW Makefiles")) {
+        $env:PATH += ";C:\\MinGW\\bin"
+      }
 
 build_script:
-  - mkdir build
-  - cd build
-  - cmake .. -G"%GENERATOR%"
-  # See http://msdn.microsoft.com/en-us/library/ms164311.aspx for
-  # command-line options to MSBuild.
-  - cmd: cmake --build . -- %BUILDFLAGS%
+  - cmake -H. -Bbuild -G"%GENERATOR%"
+  - cmake --build build --target install -- %BUILDFLAGS%
 
 test_script:
-  - cmd: ctest --output-on-failure --verbose
+  - cd build
+  - ctest --output-on-failure --verbose
 
 deploy: off
+
