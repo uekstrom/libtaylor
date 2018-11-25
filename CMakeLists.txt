@@ -26,8 +26,15 @@ add_subdirectory(tests)
 # <<< Create a target >>> Install and export targets >>>
 
 add_library(taylor INTERFACE)
+
+target_compile_definitions(taylor
+  INTERFACE
+    $<$<BOOL:${WIN32}>:_USE_MATH_DEFINES>
+  )
+
 target_include_directories(taylor
   INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
   )
 
@@ -37,7 +44,6 @@ install(
   FILES
     ctaylor.hpp
     ctaylor_math.hpp
-    micromath.hpp
     polymul.hpp
     taylor.hpp
     taylor_math.hpp

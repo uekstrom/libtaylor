@@ -1,8 +1,10 @@
 add_executable(unittest_taylor ${CMAKE_CURRENT_SOURCE_DIR}/unittest_taylor.cpp)
-target_include_directories(unittest_taylor
+
+target_link_libraries(unittest_taylor
   PRIVATE
-    ${PROJECT_SOURCE_DIR}
+    taylor
   )
+
 add_test(
   NAME Taylor
   COMMAND $<TARGET_FILE:unittest_taylor>

@@ -30,11 +30,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include <cmath>
 
-#ifdef _MSC_VER
-#define _USE_MATH_DEFINES
-#include "micromath.hpp"
-#endif
-
 // Taylor series of 1/(a+x)
 template <typename T, int N>
 static void inv_taylor(taylor<T, 1, N> & t, const T & a) {

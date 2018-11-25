@@ -47,11 +47,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <cassert>
 #include <cmath>
 
-#ifdef _MSC_VER
-#define _USE_MATH_DEFINES
-#include "micromath.hpp"
-#endif
-
 // Taylor math, template style
 // N is always the order of the polynomial
 

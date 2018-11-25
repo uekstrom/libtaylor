@@ -23,18 +23,15 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
 #include <string>
-#ifdef _MSC_VER
-#include <iterator>
-#endif
-
-using namespace std;
 
 #include "taylor.hpp"
+
 using num_t = double;
 
 using namespace polymul;
@@ -83,13 +80,13 @@ const num_t composed_good[] = {1.49182469764127,
                                5.614034702163628};    // y^2
 
 template <typename num, int Nvar, int Ndeg>
-void printpoly(ostream & dst, const polynomial<num, Nvar, Ndeg> & p) {
+void printpoly(std::ostream & dst, const polynomial<num, Nvar, Ndeg> & p) {
   int exps[Nvar] = {0};
   for (int i = 0; i < p.size; i++) {
     p.exponents(i, exps);
     for (int j = 0; j < Nvar; j++)
-      cout << exps[j] << " ";
-    cout << " " << p[i] << endl;
+      std::cout << exps[j] << " ";
+    std::cout << " " << p[i] << std::endl;
     assert(i == p.term_index(exps));
   }
 }
@@ -128,7 +125,7 @@ int taylor_check(const char * label,
                  num_t thres) {
   int nfail = 0;
   for (int i = 0; i < NR_COEFF_CHECK; i++) {
-    T err = 2 * fabs(t[i] - correct[i]) / (1 + fabs(correct[i]));
+    T err = 2 * std::abs(t[i] - correct[i]) / (1 + std::abs(correct[i]));
     if (err > thres) {
       std::ostringstream message;
       message << std::string("Error in coefficient ") << i << std::string(" of ")
@@ -143,7 +140,7 @@ int taylor_check(const char * label,
 }
 
 template <typename T> T error_measure(const T & x1, const T & x2) {
-  return 2 * fabs(x1 - x2) / (1 + 0.5 * fabs(x1 + x2));
+  return 2 * std::abs(x1 - x2) / (1 + 0.5 * std::abs(x1 + x2));
 }
 
 template <typename T, int Nvar, int Ndeg>
@@ -152,7 +149,7 @@ int taylor_compare(const taylor<T, Nvar, Ndeg> & t1,
                    num_t thres) {
   int nfail = 0;
   for (int i = 0; i < t1.size; i++) {
-    T err = 2 * fabs(t1[i] - t2[i]) / (1 + 0.5 * fabs(t1[i] + t2[i]));
+    T err = 2 * std::abs(t1[i] - t2[i]) / (1 + 0.5 * std::abs(t1[i] + t2[i]));
     if (err > thres) {
       std::ostringstream message;
       message << "Difference in coefficient " << i << ". Correct:" << t1[i]
@@ -198,7 +195,7 @@ int main() {
   taylor<num_t, 1, 6> tin1(x1, 0);
   int res = 0;
 
-  cout.precision(16);
+  std::cout.precision(16);
 
   // Test some elementary functions (also test composition etc)
   res += taylor_check("exp", exp(tin), exp_good, 1e-15);
@@ -238,7 +235,7 @@ int main() {
     for (int i = 0; i < p.size; i++)
       p[i] = i + 1;
     num_t x[2] = {3, 7.1};
-    if (fabs(p.eval(x) - 473.26) / 473.26 > 1e-15) {
+    if (std::abs(p.eval(x) - 473.26) / 473.26 > 1e-15) {
       std::ostringstream message;
       message << std::string("Error evaluating multivariate, error ")
               << p.eval(x) - 473.26;
@@ -252,7 +249,8 @@ int main() {
       p2[i] = i + 1 + (i & 3);
     pp = p1 * p2;
     num_t r[4] = {3.1, 4, 5, 6};
-    if (fabs(pp.eval(r) - p1.eval(r) * p2.eval(r)) > 1e-15 * fabs(pp.eval(r))) {
+    if (std::abs(pp.eval(r) - p1.eval(r) * p2.eval(r)) >
+        1e-15 * std::abs(pp.eval(r))) {
       std::ostringstream message;
       message << "Error evaluating multivariate:" << pp.eval(r) << " "
               << p1.eval(r) * p2.eval(r);
@@ -290,7 +288,8 @@ int main() {
   for (int i = 0; i <= 10; i++) {
     for (int j = 0; i + j <= 10; j++) {
       int ij[2] = {i, j};
-      if (fabs(nchoosek[nchoosek.term_index(ij)] - stupid_binomial(j, i)) > 1e-15) {
+      if (std::abs(nchoosek[nchoosek.term_index(ij)] - stupid_binomial(j, i)) >
+          1e-15) {
         TAYLOR_ERROR(
             "Error evaluating binomial coefficients by generating function");
         res++;
@@ -332,11 +331,11 @@ int main() {
         }
       }
   // acos
-  cout << scientific;
-  cout.precision(16);
+  std::cout << std::scientific;
+  std::cout.precision(16);
   taylor<num_t, 1, 6> acosx(1e-4, 0), acosout = acos(acosx);
   for (int i = 0; i < acosout.size; i++)
-    cout << i << std::string(" ") << acosout[i] << endl;
+    std::cout << i << std::string(" ") << acosout[i] << std::endl;
 
   // Test fast functions
   taylor<double, 2, 12> xin(2, 0), yin(1, 1), tslow, tfast;

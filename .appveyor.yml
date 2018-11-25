@@ -1,9 +1,13 @@
 version: 'build_{build}-{branch}'
 
-platform: x86
+platform:
+  - x64
 
 build:
   parallel: true
+
+configuration:
+  - Debug
 
 environment:
   SHELL: "windows"
@@ -27,13 +31,29 @@ init:
         $env:PATH += ";C:\\MinGW\\bin"
       }
 
+before_build:
+  - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+  - cmake -H.
+          -Bbuild
+          -G"%GENERATOR%"
+          -DCMAKE_BUILD_TYPE="%CONFIGURATION%"
+          -DCMAKE_INSTALL_PREFIX="%APPVEYOR_BUILD_FOLDER%/install"
+
 build_script:
-  - cmake -H. -Bbuild -G"%GENERATOR%"
-  - cmake --build build --target install -- %BUILDFLAGS%
+  - cmake --build build
+          --config "%CONFIGURATION%"
+          -- %BUILDFLAGS%
+
+after_build:
+  - cmake --build build
+          --config "%CONFIGURATION%"
+          --target install
 
 test_script:
   - cd build
-  - ctest --output-on-failure --verbose
+  - ctest --build-config "%CONFIGURATION%"
+          --output-on-failure
+          --verbose
 
 deploy: off
 
