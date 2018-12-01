@@ -93,6 +93,8 @@ install(
     ${INSTALL_CMAKEDIR}
   )
 
+set_property(DIRECTORY PROPERTY EP_BASE ${CMAKE_BINARY_DIR}/subprojects)
+
 # we need ExternalProject functionality
 include(ExternalProject)
 
@@ -103,10 +105,9 @@ ExternalProject_Add(pybind11_external
   GIT_TAG
     v2.2.3
   CMAKE_ARGS
-    -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}
     -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/stage
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}  # unused, but needs working compiler
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
     -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
     -DPYBIND11_TEST=OFF
   LOG_DOWNLOAD 1
@@ -125,9 +126,10 @@ ExternalProject_Add(pytaylor
     ${CMAKE_CURRENT_BINARY_DIR}/pytaylor
   CMAKE_ARGS
     -Dpybind11_DIR=${CMAKE_CURRENT_BINARY_DIR}/stage/share/cmake/pybind11
-    -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}
-    -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/install
+    -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/stage
     -DLIBTAYLOR_INCLUDE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
   )
 
 # define test
@@ -135,13 +137,9 @@ add_test(
   NAME
     python_test
   COMMAND
-    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/pytaylor/test.py
+    ${CMAKE_COMMAND} -E env PYTAYLOR_MODULE_PATH=${CMAKE_CURRENT_BINARY_DIR}
+    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/pytaylor/test_taylor_import.py
+    #${PYTHON_EXECUTABLE} -m pytest -rws -v --capture=sys ${CMAKE_CURRENT_SOURCE_DIR}/pytaylor/test.py
   WORKING_DIRECTORY
     ${CMAKE_CURRENT_BINARY_DIR}
-  )
-
-# test needs to know the location of the compiled module
-set_tests_properties(python_test
-  PROPERTIES
-    ENVIRONMENT PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}:$ENV{PYTHONPATH}
   )

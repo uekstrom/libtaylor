@@ -1,7 +1,2 @@
-from .pytaylor import taylor
-from .version import __version__
-
-__all__ = [
-    '__version__',
-    'taylor',
-]
+from .pytaylor import *  # isort:skip
+from .version import __version__  # isort: skip
