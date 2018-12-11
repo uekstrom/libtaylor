@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(GNUInstallDirs)
+set(INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR} CACHE PATH "Installation directory for libraries")
 set(INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE PATH "Installation directory for header files")
 if(WIN32 AND NOT CYGWIN)
   set(DEF_INSTALL_CMAKEDIR CMake)
@@ -18,6 +19,10 @@ else()
 endif()
 set(INSTALL_CMAKEDIR ${DEF_INSTALL_CMAKEDIR} CACHE PATH "Installation directory for CMake files")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
+# This is needed to run tests from the build directory
+set(STAGED_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/stage)
+# Report staged installation prefix
+message(STATUS "Staged installation location ${STAGED_INSTALL_PREFIX}")
 
 enable_testing()
 
@@ -119,7 +124,8 @@ ExternalProject_Add(pybind11_external
 
 # process our source code as if it was an external project
 ExternalProject_Add(pytaylor
-  DEPENDS pybind11_external
+  DEPENDS
+    pybind11_external
   SOURCE_DIR
     ${CMAKE_CURRENT_SOURCE_DIR}/pytaylor
   BINARY_DIR
@@ -128,18 +134,18 @@ ExternalProject_Add(pytaylor
     -Dpybind11_DIR=${CMAKE_CURRENT_BINARY_DIR}/stage/share/cmake/pybind11
     -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/stage
     -DLIBTAYLOR_INCLUDE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+    -DINSTALL_LIBDIR=${INSTALL_LIBDIR}
     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
     -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+    -DCMAKE_INSTALL_MESSAGE=NEVER
+  BUILD_ALWAYS 1
   )
 
-# define test
-add_test(
-  NAME
-    python_test
-  COMMAND
-    ${CMAKE_COMMAND} -E env PYTAYLOR_MODULE_PATH=${CMAKE_CURRENT_BINARY_DIR}
-    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/pytaylor/test_taylor_import.py
-    #${PYTHON_EXECUTABLE} -m pytest -rws -v --capture=sys ${CMAKE_CURRENT_SOURCE_DIR}/pytaylor/test.py
-  WORKING_DIRECTORY
-    ${CMAKE_CURRENT_BINARY_DIR}
+install(
+  DIRECTORY
+    ${STAGED_INSTALL_PREFIX}/
+  DESTINATION
+    .
+  USE_SOURCE_PERMISSIONS
+  PATTERN "*.pyc" EXCLUDE
   )

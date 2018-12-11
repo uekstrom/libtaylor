@@ -47,3 +47,14 @@ set_tests_properties(use-taylor_cleanup
   PROPERTIES
     FIXTURES_CLEANUP use-taylor
   )
+
+# <<< Test Python bindings >>>
+add_test(
+  NAME
+    pytaylor_import
+  COMMAND
+   ${CMAKE_COMMAND} -E env PYTAYLOR_MODULE_PATH=${STAGED_INSTALL_PREFIX}/${INSTALL_LIBDIR}
+   ${PYTHON_EXECUTABLE} -m pytest -rws -v --capture=sys ${CMAKE_CURRENT_SOURCE_DIR}/test_taylor_import.py
+  WORKING_DIRECTORY
+    ${CMAKE_CURRENT_BINARY_DIR}
+  )

@@ -34,19 +34,17 @@ target_include_directories(pytaylor
 set_target_properties(pytaylor
   PROPERTIES
     PREFIX "${PYTHON_MODULE_PREFIX}"
+    RESOURCE "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py;${CMAKE_CURRENT_SOURCE_DIR}/version.py"
     SUFFIX "${PYTHON_MODULE_EXTENSION}"
-  )
-
-file(
-  COPY
-    __init__.py
-    version.py
-  DESTINATION
-    ${CMAKE_CURRENT_BINARY_DIR}
   )
 
 install(
   TARGETS
     pytaylor
-  LIBRARY DESTINATION .
+  LIBRARY
+    DESTINATION ${INSTALL_LIBDIR}/pytaylor
+    COMPONENT lib
+  RESOURCE
+    DESTINATION ${INSTALL_LIBDIR}/pytaylor
+    COMPONENT lib
   )
