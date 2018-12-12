@@ -68,3 +68,13 @@ add_test(
   WORKING_DIRECTORY
     ${CMAKE_CURRENT_BINARY_DIR}
   )
+
+add_test(
+  NAME
+    pytaylor_bivariate
+  COMMAND
+   ${CMAKE_COMMAND} -E env PYTAYLOR_MODULE_PATH=${STAGED_INSTALL_PREFIX}/${INSTALL_LIBDIR}
+   ${PYTHON_EXECUTABLE} -m pytest -rws -v --capture=sys ${CMAKE_CURRENT_SOURCE_DIR}/test_bivariate.py
+  WORKING_DIRECTORY
+    ${CMAKE_CURRENT_BINARY_DIR}
+  )

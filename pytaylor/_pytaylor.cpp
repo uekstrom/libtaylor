@@ -60,4 +60,7 @@ PYBIND11_MODULE(_pytaylor, mod) {
 
   declarePolynomial<double, 1, 1>(mod, "D_1_1");
   declareTaylor<double, 1, 1>(mod, "D_1_1");
+
+  declarePolynomial<double, 2, 1>(mod, "D_2_1");
+  declareTaylor<double, 2, 1>(mod, "D_2_1");
 }
