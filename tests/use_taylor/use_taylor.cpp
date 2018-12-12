@@ -26,7 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <iomanip>
 #include <iostream>
 
-#include "taylor.hpp"
+#include <taylor/taylor.hpp>
 
 // This is a very small example of taking derivatives
 // using libtaylor.
@@ -40,7 +40,7 @@ template <typename T> T f(const T & x, const T & y) {
 
 template <typename T> T slaterx(const T & x) { return -0.93 * pow(x, 4.0 / 3.0); }
 
-int main(void) {
+int main() {
   // Compute a directional derivative of f(x,y) in the direction
   // (1,2), at point (x,y) = (3,4). This is equivalent to computing the
   // taylor expansion of f(3+1*eps, 4+2*eps) in the variable eps.
