@@ -23,6 +23,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <cmath>
 #include <iomanip>
 #include <iostream>
 
@@ -87,6 +88,12 @@ int main(void) {
   std::cout << ex << std::endl;
   ex.deriv_facs();
   std::cout << ex << std::endl;
+
+  taylor<double, 1, 1> x1(1.0, 0);
+  taylor<double, 1, 1> sq = x1 * x1;
+  std::cout << sq << std::endl;
+  ex.deriv_facs();
+  std::cout << sq << std::endl;
 
   return 0;
 }

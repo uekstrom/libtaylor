@@ -1,2 +1,2 @@
-from .pytaylor import *  # isort:skip
+from ._pytaylor import *  # isort:skip
 from .version import __version__  # isort: skip

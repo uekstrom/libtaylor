@@ -17,21 +17,21 @@ message(STATUS "Using pybind11: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERS
 message(STATUS "Using Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}: ${PYTHON_EXECUTABLE}")
 
 #  <<< compiled extension target >>>
-pybind11_add_module(pytaylor MODULE THIN_LTO pytaylor.cpp)
+pybind11_add_module(_pytaylor MODULE THIN_LTO _pytaylor.cpp)
 
 if(WIN32 AND (NOT MSVC))
-  target_compile_definitions(pytaylor
+  target_compile_definitions(_pytaylor
     PUBLIC
       "_hypot=hypot"
     )
 endif()
 
-target_include_directories(pytaylor
+target_include_directories(_pytaylor
   PUBLIC
     ${LIBTAYLOR_INCLUDE_DIR}
   )
 
-set_target_properties(pytaylor
+set_target_properties(_pytaylor
   PROPERTIES
     PREFIX "${PYTHON_MODULE_PREFIX}"
     RESOURCE "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py;${CMAKE_CURRENT_SOURCE_DIR}/version.py"
@@ -40,7 +40,7 @@ set_target_properties(pytaylor
 
 install(
   TARGETS
-    pytaylor
+    _pytaylor
   LIBRARY
     DESTINATION ${INSTALL_LIBDIR}/pytaylor
     COMPONENT lib

@@ -28,6 +28,9 @@ enable_testing()
 
 add_subdirectory(tests)
 
+# <<< Compile example >>>
+add_executable(example example.cpp)
+
 # <<< Create a target >>> Install and export targets >>>
 
 add_library(taylor INTERFACE)
@@ -51,6 +54,7 @@ install(
     ctaylor_math.hpp
     polymul.hpp
     taylor.hpp
+    taylor_impl.hpp
     taylor_math.hpp
     tmath.hpp
   DESTINATION
@@ -128,8 +132,6 @@ ExternalProject_Add(pytaylor
     pybind11_external
   SOURCE_DIR
     ${CMAKE_CURRENT_SOURCE_DIR}/pytaylor
-  BINARY_DIR
-    ${CMAKE_CURRENT_BINARY_DIR}/pytaylor
   CMAKE_ARGS
     -Dpybind11_DIR=${CMAKE_CURRENT_BINARY_DIR}/stage/share/cmake/pybind11
     -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/stage
