@@ -19,9 +19,13 @@ endif()
 set(INSTALL_CMAKEDIR ${DEF_INSTALL_CMAKEDIR} CACHE PATH "Installation directory for CMake files")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 
-enable_testing()
+option(ENABLE_TESTS "Enable testing" ON)
 
-add_subdirectory(tests)
+if(ENABLE_TESTS)
+  enable_testing()
+
+  add_subdirectory(tests)
+endif()
 
 # <<< Create a target >>> Install and export targets >>>
 
