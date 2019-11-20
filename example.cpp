@@ -23,6 +23,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <cmath>
 #include <iomanip>
 #include <iostream>
 
@@ -61,10 +62,13 @@ int main(void) {
   dy[2] = 1.0;
   std::cout << dx << std::endl;
   std::cout << dy << std::endl;
-  taylor<double, 2, 1> gradient = f(dx, dy);
+  auto gradient = f(dx, dy);
   std::cout << std::setprecision(12) << gradient << std::endl;
   gradient.deriv_facs();
   std::cout << gradient << std::endl;
+  auto sum = dx+dy;
+  std::cout << "sum " << std::endl;
+  std::cout << sum << std::endl;
 
   // Hessian of a 2-variable function
   taylor<double, 2, 2> x, y;
@@ -87,6 +91,12 @@ int main(void) {
   std::cout << ex << std::endl;
   ex.deriv_facs();
   std::cout << ex << std::endl;
+
+  taylor<double, 1, 1> x1(1.0, 0);
+  auto sq = x1 * x1;
+  std::cout << sq << std::endl;
+  sq.deriv_facs();
+  std::cout << sq << std::endl;
 
   return 0;
 }
